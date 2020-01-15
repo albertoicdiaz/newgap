@@ -127,6 +127,18 @@ def welcome(request):
         # activate_graphics = activate_course_filter and activate_school_filter and activate_reim_filter
         # activate_graphics_general = activate_activity_filter and activate_course_filter and activate_school_filter and activate_reim_filter
         # activate_graphics_student = activate_course_filter and activate_school_filter and activate_reim_filter and activate_student_filter
+        questions_quantity_response = []
+        if request.GET.get('dominio'):
+            dominio_num = request.GET.get('dominio')
+            query = 'SELECT id_pregunta, pregunta_de_auditoria FROM pregunta WHERE dominio_id="' + str(dominio_num) + '"'
+            cursor.execute(query)
+            questions_quantity = cursor.fetchall()
+            questions_quantity_response=[]
+            for row in questions_quantity:
+                questions_quantity_response.append({ 'id': row[0], 'question': row[1]})
+        else:
+            dominio_num = 0
+        print ("num dominio", dominio_num)
        
         return render(
             request,
@@ -138,7 +150,8 @@ def welcome(request):
                 # 'activate_graphics_student':activate_graphics_student,
                 # Other context var
                 'queries': queries,
-                # 'schools': schools_response,
+                'dominio_num': dominio_num,
+                'questions_quantity':questions_quantity_response,
                 # 'reims': reims_response,
                 # 'game_time': game_time_response,
                 # 'courses': courses_response,
@@ -227,16 +240,13 @@ def logout(request):
     # Redireccionamos a la portada
     return redirect('/')
 
-def dom(request, dom):
-    cursor = get_from_db()
-    query = 'SELECT id_pregunta, pregunta_de_auditoria FROM pregunta WHERE dominio_id="' + str(dom) + '"'
-    print (query)
-    cursor.execute(query)
-    questions_quantity = cursor.fetchall()
-    questions_quantity_response=[]
-    for row in questions_quantity:
-        questions_quantity_response.append({ 'id': row[0], 'question': row[1]})
-    print (questions_quantity_response)
-    #return HttpResponse('<h1> ASKDJH </h1>')
-    return render(request, "users/dom.html")
-    #  usuario.username="' + request.user.username + '" GROUP BY colegio.id')
+# def dom(request, dom):
+#     cursor = get_from_db()
+#     query = 'SELECT id_pregunta, pregunta_de_auditoria FROM pregunta WHERE dominio_id="' + str(dom) + '"'
+#     print (query)
+#     cursor.execute(query)
+#     questions_quantity = cursor.fetchall()
+#     questions_quantity_response=[]
+#     for row in questions_quantity:
+#         questions_quantity_response.append({ 'id': row[0], 'question': row[1]})
+#     print (questions_quantity_response)

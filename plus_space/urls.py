@@ -18,10 +18,10 @@ from django.urls import path
 from users import views
 
 urlpatterns = [
-    path('', views.welcome),
+    path('', views.welcome, name="dashboard"),
     path('register', views.register),
     path('login', views.login),
     path('logout', views.logout),
     path('admin/', admin.site.urls),
-    path('dom/<int:dom>/', views.dom, name="dominio"),
+    # path('dom/<int:dom>/', views.dom, name="dominio"),
 ]
