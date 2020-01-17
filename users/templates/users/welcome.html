@@ -280,8 +280,25 @@
                     {% endif%}
                 </tbody>
             </table>
-            <button class="btn btn-sm btn-primary m-t-n-xs float-right" style="margin-right: 30px;"><i class="fa fa-check-square-o"></i> Enviar</button>
+            <button class="btn btn-sm btn-primary m-t-n-xs float-right" style="margin-right: 30px;" onclick="send_button();"><i class="fa fa-check-square-o"></i> Enviar</button>
+            <button class="btn btn-sm btn-primary m-t-n-xs float-right" style="margin-right: 30px;" onclick="clear_radio();"><i class="fa fa-check-square"></i> Limpiar</button>
         {% endif %}
+            <script>
+                function clear_radio(){
+                    $('input[type="radio"]').prop('checked', false); 
+                }
+                function send_button(){
+                    var array = []
+                    {% for questions in questions_quantity %}
+                        if ($('input[name="customRadio-{{questions.id}}"]').is(':checked')){
+                            array.push(document.querySelector('input[name="customRadio-{{questions.id}}"]:checked').value);
+                        }
+                    {% endfor%}
+                    console.log(array);
+                    
+
+                }
+            </script>
 
             <!-- Clean Ocean -->
             {% if reim_num == '3' %}
@@ -1515,7 +1532,7 @@
         }
     </script>
 
-    <script>
+    <!-- <script>
         function setFilterSelectors(params){
             let queryString = location.search;
             let urlParams = new URLSearchParams(queryString);
@@ -1528,7 +1545,7 @@
             }
         }
         setFilterSelectors(['dominio'])
-    </script>
+    </script> -->
 
     <!-- <script type="text/javascript">
             setTimeout(function(){
