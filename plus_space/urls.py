@@ -23,5 +23,6 @@ urlpatterns = [
     path('login', views.login),
     path('logout', views.logout),
     path('admin/', admin.site.urls),
+    path('my-ajax-test/', views.myajaxtestview, name='ajax-test-view'),
     # path('dom/<int:dom>/', views.dom, name="dominio"),
 ]

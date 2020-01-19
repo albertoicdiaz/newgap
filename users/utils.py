@@ -8,6 +8,9 @@ def get_from_db():
 
 #INICIO QUERYS GENERALES
 
+def get_answers(request):
+    return ("SELECT * FROM respuesta")
+
 # def get_date_param(request):
 
 #     date = ''

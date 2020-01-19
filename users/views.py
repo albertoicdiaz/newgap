@@ -250,3 +250,38 @@ def logout(request):
 #     for row in questions_quantity:
 #         questions_quantity_response.append({ 'id': row[0], 'question': row[1]})
 #     print (questions_quantity_response)
+
+def myajaxtestview(request):
+    a = request.POST.getlist('text[]')
+    newa = []
+    largo = len(a)
+    cursor = get_from_db()
+    for x in range (largo):
+        newa.append(a[x].split("-"))
+    for x in range (largo):
+        print ("query n°", x+1)
+        print ("query - usuario:", newa[x][0])
+        print ("query - question:", newa[x][1])
+        print ("query - answer:", newa[x][2])
+        query = 'INSERT INTO `heroku_78b38e177297703`.`respuesta` (`id_respuesta`, `id_pregunta`, `id_usuario`, `value`) VALUES ("'+ str(x) +'", "' + str(newa[x][1]) + '", (SELECT id_usuario FROM usuario WHERE username = "' + str(newa[x][0]) + '"), "' + str(newa[x][2]) + '")'
+        print (query)
+        # query = 'INSERT INTO `heroku_78b38e177297703`.`respuesta` (`id_respuesta`, `id_pregunta`, `id_usuario`, `value`) VALUES (%s,%s,%s,%s)'
+        # data = (" ", newa[x][1], "1", newa[x][2])
+
+        try:
+            cursor.execute(query)
+            print ("QUERY INSERTADA")
+            query = 'SELECT * FROM respuesta'
+            cursor.execute(query)
+            answers_quantity = cursor.fetchall()
+            answers_quantity_response=[]
+            for row in answers_quantity:
+                answers_quantity_response.append({ 'id': row[0], 'question': row[1], 'user': row[2], 'value': row[3], })
+            print (answers_quantity_response)
+            cnx.commit()
+        except NameError:
+            print ("NO SE PUDO INSERTAR")
+
+
+    return HttpResponse(a)
+    

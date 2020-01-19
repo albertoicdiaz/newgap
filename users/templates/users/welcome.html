@@ -16,6 +16,8 @@
     <link href="{% static 'css/style.css' %}" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.4/jspdf.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/json2/20160511/json2.js"></script>
 </head>
 <body>
 <div id="wrapper">
@@ -294,9 +296,20 @@
                             array.push(document.querySelector('input[name="customRadio-{{questions.id}}"]:checked').value);
                         }
                     {% endfor%}
+                    // array = JSON.stringify(array)
                     console.log(array);
-                    
 
+                    $.ajax({
+                    type: "POST",
+                    url: '{{ 'my-ajax-test/'}}',
+                    // datatype: "json",  
+                    data: {
+                        csrfmiddlewaretoken: '{{ csrf_token }}',
+                        text: array},   /* Passing the text data */
+                    success:  function(response){
+                        alert(response);
+                        }
+                    });
                 }
             </script>
 
