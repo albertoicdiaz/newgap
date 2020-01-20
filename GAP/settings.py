@@ -51,7 +51,7 @@ MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
-ROOT_URLCONF = 'plus_space.urls'
+ROOT_URLCONF = 'GAP.urls'
 
 TEMPLATES = [
     {
@@ -69,7 +69,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'plus_space.wsgi.application'
+WSGI_APPLICATION = 'GAP.wsgi.application'
 
 
 # Database

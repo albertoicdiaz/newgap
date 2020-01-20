@@ -1,1 +1,1 @@
-web: gunicorn plus_space.wsgi
+web: gunicorn GAP.wsgi
