@@ -7,6 +7,7 @@ from django.contrib.auth import login as do_login
 from django.contrib.auth import logout as do_logout
 from django.contrib.auth.models import User
 from django.http import HttpResponse
+import mysql.connector
 
 
 def welcome(request):
@@ -255,7 +256,8 @@ def myajaxtestview(request):
     a = request.POST.getlist('text[]')
     newa = []
     largo = len(a)
-    cursor = get_from_db()
+    cnx = mysql.connector.connect(user='beef97dd2bf657', database='heroku_78b38e177297703', host='us-cdbr-iron-east-05.cleardb.net', password='b50088b0')
+    cursor = cnx.cursor()
     for x in range (largo):
         newa.append(a[x].split("-"))
     for x in range (largo):
@@ -270,6 +272,7 @@ def myajaxtestview(request):
 
         try:
             cursor.execute(query)
+            cnx.commit()
             print ("QUERY INSERTADA")
             query = 'SELECT * FROM respuesta'
             cursor.execute(query)
@@ -278,7 +281,6 @@ def myajaxtestview(request):
             for row in answers_quantity:
                 answers_quantity_response.append({ 'id': row[0], 'question': row[1], 'user': row[2], 'value': row[3], })
             print (answers_quantity_response)
-            cnx.commit()
         except NameError:
             print ("NO SE PUDO INSERTAR")
 
