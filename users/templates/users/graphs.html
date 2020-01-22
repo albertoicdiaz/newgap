@@ -1,0 +1,695 @@
+<!--{% load staticfiles %}-->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-U A-Compatible" content="IE=edge">
+    <title>GAP ANALYSIS | Dashboard</title>
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/font-awesome.css' %}" rel="stylesheet">
+    <!-- Toastr style -->
+    <link href="{% static 'css/plugins/toastr/toastr.min.css' %}" rel="stylesheet">
+    <!-- Gritter -->
+    <link href="{% static 'css/plugins/gritter/jquery.gritter.css' %}" rel="stylesheet">
+    <link href="{% static 'css/animate.css' %}" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.4/jspdf.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/json2/20160511/json2.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/data.js"></script>
+    <script src="https://code.highcharts.com/modules/drilldown.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/export-data.js"></script>
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+</head>
+<body>
+<div id="wrapper">
+    <nav class="navbar-default navbar-static-side" role="navigation">
+        <div class="sidebar-collapse">
+            <ul class="nav metismenu" id="side-menu">
+                <li class="nav-header">
+                    <div class="dropdown profile-element">
+                        <img alt="image" class="rounded-circle" src="{% static 'img/profile_small.jpg' %}"/>
+                        <a data-toggle="dropdown" class="dropdown-toggle" href="#">
+                            <span class="block m-t-xs font-bold">{{request.user.first_name}}</span>
+                            <span class="text-muted text-xs block">Opciones <b class="caret"></b></span>
+                        </a>
+                        <ul class="dropdown-menu animated fadeInRight m-t-xs">
+                            <li class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/logout">Cerrar sesión</a></li>
+                        </ul>
+                    </div>
+                    <div class="logo-element">
+                        GAP
+                    </div>
+                </li>
+                <li class="active">
+                    <a href="index.html"><i class="fa fa-th-large"></i> <span class="nav-label">Módulos</span> <span class="fa arrow"></span></a>
+                    <ul class="nav nav-second-level">
+                        <li class="active"><a href="{% url 'dashboard' %}">Responder Encuesta</a></li>
+                        <li class="active"><a href="#">Resultados</a></li>
+                        </ul>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div id="page-wrapper" class="gray-bg dashbard-1">
+        <div class="row  border-bottom white-bg dashboard-header">
+            <div class="navbar-header">
+                <a class="navbar-minimalize minimalize-styl-2 btn btn-primary " href="#"><i class="fa fa-bars"></i> </a>
+                <form role="search" class="navbar-form-custom" action="search_results.html">
+                    <div class="form-group">
+                    </div>
+                </form>
+            </div>
+            <!-- <div class="col-md-12">
+                <div class="inbox float-e-margins">
+                    <div class="inbox-title">
+                        <div class="selector-colegio" >
+                            <form>
+                                <div class="row  border-bottom white-bg dashboard-header">
+                                    <div class="col-md-3">
+                                        <label  class="font-normal">Colegio</label>
+                                        <select id="school-filter-selector" name="school" class="form-control m-b">
+                                            {% if schools|length == 0 or schools|length >= 1 %}
+                                            <option value ="0" >Seleccione Colegio</option >
+                                            {% endif %}
+                                            {% if schools %}
+                                            {% for school in schools %}
+                                            <option value ={{school.id}}>{{ school.name }}</option >
+                                            {% endfor %}
+                                            {% endif %}
+                                        </select>
+                                    </div>
+
+                                    <p class="col-lg-12">
+                                        <button class="btn btn-sm btn-primary m-t-n-xs float-right"><i class="fa fa-filter"></i> Filtrar</button>
+                                        <a href="/" class="btn btn-sm btn-secondary m-t-n-xs float-right" style="margin-right: 5px"><i class="fa fa-trash"></i> Limpiar</a>
+                                    </p>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div> -->
+            <!-- </div> -->
+        </div>
+
+        <div class="wrapper wrapper-content">
+            <div class="row">
+                <div class="col-lg-12">
+                    <figure class="highcharts-figure">
+                        <div id="container"></div>
+                        <p class="highcharts-description">
+                            El gráfico muestra el porcentaje de cumplimiento de las preguntas contestadas por los empleados de la empresa.
+                        </p>
+                    </figure>
+                </div>
+              </div>
+        </div>
+
+                <div>
+                    <strong>Copyright</strong>  &copy; 2020
+                    <!-- Button trigger modal -->
+                    <button type="button" class="btn btn-link btn-sm" data-toggle="modal" data-target="#queriesModal">
+                        queries
+                    </button>
+
+                    <!-- Modal -->
+                    <div class="modal fade" id="queriesModal" tabindex="-1" role="dialog" aria-labelledby="queriesModalTitle" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="queriesModalTitle">Generated queries</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <ul>
+                                        {% for query in queries %}
+                                        <li><strong>{{query.name}}</strong>: {{query.query}}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Mainly scripts -->
+    <script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+    <script src="{% static 'js/popper.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap.js' %}"></script>
+    <script src="{% static 'js/plugins/metisMenu/jquery.metisMenu.js' %}"></script>
+    <script src="{% static 'js/plugins/slimscroll/jquery.slimscroll.min.js' %}"></script>
+    <!-- Flot -->
+    <script src="{% static 'js/plugins/flot/jquery.flot.js' %}"></script>
+    <script src="{% static 'js/plugins/flot/jquery.flot.tooltip.min.js' %}"></script>
+    <script src="{% static 'js/plugins/flot/jquery.flot.spline.js' %}"></script>
+    <script src="{% static 'js/plugins/flot/jquery.flot.resize.js' %}"></script>
+    <script src="{% static 'js/plugins/flot/jquery.flot.pie.js' %}"></script>
+    <!-- Peity -->
+    <script src="{% static 'js/plugins/peity/jquery.peity.min.js' %}"></script>
+    <script src="{% static 'js/demo/peity-demo.js' %}"></script>
+    <!-- Custom and plugin javascript -->
+    <script src="{% static 'js/inspinia.js' %}"></script>
+    <script src="{% static 'js/plugins/pace/pace.min.js' %}"></script>
+    <!-- jQuery UI -->
+    <script src="{% static 'js/plugins/jquery-ui/jquery-ui.min.js' %}"></script>
+    <!-- GITTER -->
+    <script src="{% static 'js/plugins/gritter/jquery.gritter.min.js' %}"></script>
+    <!-- Sparkline -->
+    <script src="{% static 'js/plugins/sparkline/jquery.sparkline.min.js' %}"></script>
+    <!-- Sparkline demo data  -->
+    <script src="{% static 'js/demo/sparkline-demo.js' %}"></script>
+    <!-- ChartJS-->
+    <script src="{% static 'js/plugins/chartJs/Chart.min.js' %}"></script>
+    <!-- Toastr -->
+    <script src="{% static 'js/plugins/toastr/toastr.min.js' %}"></script>
+    <!-- Date range picker -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+
+
+
+<script>
+    // Create the chart
+    value = '{{percentage_dom1}}';
+    console.log(value);
+    Highcharts.chart('container', {
+        chart: {
+            type: 'column'
+        },
+        title: {
+            text: 'Resultados encuesta GAP para empresa {{request.user.username}}'
+        },
+        subtitle: {
+            text: 'Click en las columnas para ver en detalle'
+        },
+        accessibility: {
+            announceNewData: {
+                enabled: true
+            }
+        },
+        xAxis: {
+            type: 'category'
+        },
+        yAxis: {
+            title: {
+                text: 'Porcentaje de cumplimiento'
+            }
+
+        },
+        legend: {
+            enabled: false
+        },
+        plotOptions: {
+            series: {
+                borderWidth: 0,
+                dataLabels: {
+                    enabled: true,
+                    format: '{point.y:.1f}%'
+                }
+            }
+        },
+
+        tooltip: {
+            headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
+            pointFormat: '<span style="color:{point.color}">{point.name}</span>: <b>{point.y:.2f}%</b> of total<br/>'
+        },
+
+        series: [
+            {
+                name: "Dominios",
+                colorByPoint: true,
+                data: [
+                    {
+                        name: "Dominio 1",
+                        y: parseInt(value),
+                        drilldown: "Dominio 1"
+                    },
+                    {
+                        name: "Dominio 2",
+                        y: 10.57,
+                        drilldown: "Dominio 2"
+                    },
+                    {
+                        name: "Dominio 3",
+                        y: 7.23,
+                        drilldown: "Dominio 3"
+                    },
+                    {
+                        name: "Dominio 4",
+                        y: 5.58,
+                        drilldown: "Dominio 4"
+                    },
+                    {
+                        name: "Dominio 5",
+                        y: 4.02,
+                        drilldown: "Dominio 5"
+                    },
+                    {
+                        name: "Dominio 6",
+                        y: 1.92,
+                        drilldown: "Dominio 6"
+                    },
+                    {
+                        name: "Dominio 7",
+                        y: 1.92,
+                        drilldown: "Dominio 7"
+                    },
+                    {
+                        name: "Dominio 8",
+                        y: 1.92,
+                        drilldown: "Dominio 8"
+                    },
+                    {
+                        name: "Dominio 9",
+                        y: 1.92,
+                        drilldown: "Dominio 9"
+                    },
+                    {
+                        name: "Dominio 9",
+                        y: 1.92,
+                        drilldown: "Dominio 9"
+                    },
+                    {
+                        name: "Dominio 10",
+                        y: 1.92,
+                        drilldown: "Dominio 10"
+                    },
+                    {
+                        name: "Dominio 11",
+                        y: 1.92,
+                        drilldown: "Dominio 11"
+                    }
+                ]
+                // data: [
+                //     {
+                //         name: "Dominio 1",
+                //         y: 50.12,
+                //         drilldown: "Dominio 1"
+                //     },
+                //     {
+                //         name: "Dominio 2",
+                //         y: 10.57,
+                //         drilldown: "Dominio 2"
+                //     },
+                //     {
+                //         name: "Dominio 3",
+                //         y: 7.23,
+                //         drilldown: "Dominio 3"
+                //     },
+                //     {
+                //         name: "Dominio 4",
+                //         y: 5.58,
+                //         drilldown: "Dominio 4"
+                //     },
+                //     {
+                //         name: "Dominio 5",
+                //         y: 4.02,
+                //         drilldown: "Dominio 5"
+                //     },
+                //     {
+                //         name: "Dominio 6",
+                //         y: 1.92,
+                //         drilldown: "Dominio 6"
+                //     },
+                //     {
+                //         name: "Dominio 7",
+                //         y: 1.92,
+                //         drilldown: "Dominio 7"
+                //     },
+                //     {
+                //         name: "Dominio 8",
+                //         y: 1.92,
+                //         drilldown: "Dominio 8"
+                //     },
+                //     {
+                //         name: "Dominio 9",
+                //         y: 1.92,
+                //         drilldown: "Dominio 9"
+                //     },
+                //     {
+                //         name: "Dominio 9",
+                //         y: 1.92,
+                //         drilldown: "Dominio 9"
+                //     },
+                //     {
+                //         name: "Dominio 10",
+                //         y: 1.92,
+                //         drilldown: "Dominio 10"
+                //     },
+                //     {
+                //         name: "Dominio 11",
+                //         y: 1.92,
+                //         drilldown: "Dominio 11"
+                //     }
+                // ]
+            }
+        ],
+        drilldown: {
+            series: [
+                {
+                    name: "Dominio 1",
+                    id: "Dominio 1",
+                    data: [
+                        [
+                            "v65.0",
+                            0.1
+                        ],
+                        [
+                            "v64.0",
+                            1.3
+                        ],
+                        [
+                            "v63.0",
+                            53.02
+                        ],
+                        [
+                            "v62.0",
+                            1.4
+                        ],
+                        [
+                            "v61.0",
+                            0.88
+                        ],
+                        [
+                            "v60.0",
+                            0.56
+                        ],
+                        [
+                            "v59.0",
+                            0.45
+                        ],
+                        [
+                            "v58.0",
+                            0.49
+                        ],
+                        [
+                            "v57.0",
+                            0.32
+                        ],
+                        [
+                            "v56.0",
+                            0.29
+                        ],
+                        [
+                            "v55.0",
+                            0.79
+                        ],
+                        [
+                            "v54.0",
+                            0.18
+                        ],
+                        [
+                            "v51.0",
+                            0.13
+                        ],
+                        [
+                            "v49.0",
+                            2.16
+                        ],
+                        [
+                            "v48.0",
+                            0.13
+                        ],
+                        [
+                            "v47.0",
+                            0.11
+                        ],
+                        [
+                            "v43.0",
+                            0.17
+                        ],
+                        [
+                            "v29.0",
+                            0.26
+                        ]
+                    ]
+                },
+                {
+                    name: "Dominio 2",
+                    id: "Dominio 2",
+                    data: [
+                        [
+                            "v58.0",
+                            1.02
+                        ],
+                        [
+                            "v57.0",
+                            7.36
+                        ],
+                        [
+                            "v56.0",
+                            0.35
+                        ],
+                        [
+                            "v55.0",
+                            0.11
+                        ],
+                        [
+                            "v54.0",
+                            0.1
+                        ],
+                        [
+                            "v52.0",
+                            0.95
+                        ],
+                        [
+                            "v51.0",
+                            0.15
+                        ],
+                        [
+                            "v50.0",
+                            0.1
+                        ],
+                        [
+                            "v48.0",
+                            0.31
+                        ],
+                        [
+                            "v47.0",
+                            0.12
+                        ]
+                    ]
+                },
+                {
+                    name: "Dominio 3",
+                    id: "Dominio 3",
+                    data: [
+                        [
+                            "v11.0",
+                            6.2
+                        ],
+                        [
+                            "v10.0",
+                            0.29
+                        ],
+                        [
+                            "v9.0",
+                            0.27
+                        ],
+                        [
+                            "v8.0",
+                            0.47
+                        ]
+                    ]
+                },
+                {
+                    name: "Dominio 4",
+                    id: "Dominio 4",
+                    data: [
+                        [
+                            "v11.0",
+                            3.39
+                        ],
+                        [
+                            "v10.1",
+                            0.96
+                        ],
+                        [
+                            "v10.0",
+                            0.36
+                        ],
+                        [
+                            "v9.1",
+                            0.54
+                        ],
+                        [
+                            "v9.0",
+                            0.13
+                        ],
+                        [
+                            "v5.1",
+                            0.2
+                        ]
+                    ]
+                },
+                {
+                    name: "Dominio 5",
+                    id: "Dominio 5",
+                    data: [
+                        [
+                            "v16",
+                            2.6
+                        ],
+                        [
+                            "v15",
+                            0.92
+                        ],
+                        [
+                            "v14",
+                            0.4
+                        ],
+                        [
+                            "v13",
+                            0.1
+                        ]
+                    ]
+                },
+                {
+                    name: "Dominio 6",
+                    id: "Dominio 6",
+                    data: [
+                        [
+                            "v50.0",
+                            0.96
+                        ],
+                        [
+                            "v49.0",
+                            0.82
+                        ],
+                        [
+                            "v12.1",
+                            0.14
+                        ]
+                    ]
+                },
+                {
+                    name: "Dominio 7",
+                    id: "Dominio 7",
+                    data: [
+                        [
+                            "v50.0",
+                            0.96
+                        ],
+                        [
+                            "v49.0",
+                            0.82
+                        ],
+                        [
+                            "v12.1",
+                            0.14
+                        ]
+                    ]
+                },
+                {
+                    name: "Dominio 8",
+                    id: "Dominio 8",
+                    data: [
+                        [
+                            "v50.0",
+                            0.96
+                        ],
+                        [
+                            "v49.0",
+                            0.82
+                        ],
+                        [
+                            "v12.1",
+                            0.14
+                        ]
+                    ]
+                },
+                {
+                    name: "Dominio 9",
+                    id: "Dominio 9",
+                    data: [
+                        [
+                            "v50.0",
+                            0.96
+                        ],
+                        [
+                            "v49.0",
+                            0.82
+                        ],
+                        [
+                            "v12.1",
+                            0.14
+                        ]
+                    ]
+                },
+                {
+                    name: "Dominio 10",
+                    id: "Dominio 10",
+                    data: [
+                        [
+                            "v50.0",
+                            0.96
+                        ],
+                        [
+                            "v49.0",
+                            0.82
+                        ],
+                        [
+                            "v12.1",
+                            0.14
+                        ]
+                    ]
+                },
+                {
+                    name: "Dominio 11",
+                    id: "Dominio 11",
+                    data: [
+                        [
+                            "v50.0",
+                            0.96
+                        ],
+                        [
+                            "v49.0",
+                            0.82
+                        ],
+                        [
+                            "v12.1",
+                            0.14
+                        ]
+                    ]
+                }
+            ]
+        }
+    });
+</script>
+    <script>
+    // document.getElementById('download-pdf2').addEventListener("click", downloadPDF2);
+    // function downloadPDF2() {
+    //     var newCanvas = document.querySelector('#stacked');
+
+    //     //create image from dummy canvas
+    //         var newCanvasImg = newCanvas.toDataURL("image/jpeg", 1.0);
+        
+    //         //creates PDF from img
+    //         var doc = new jsPDF('landscape');
+    //         doc.setFontSize(20);
+    //         doc.text(15, 15, "Super Cool Chart");
+    //         doc.addImage(newCanvasImg, 'JPEG', 10, 10, 280, 150 );
+    //         doc.save('new-canvas.pdf');
+    //     }
+
+    </script>
+    <script>
+        function calculateBarWidth(datasetCount){
+            if(options.isFixedWidth){
+                return options.barWidth;
+            }else{
+                var baseWidth = this.calculateBaseWidth() - ((datasetCount - 1) * options.barDatasetSpacing);
+                return (baseWidth / datasetCount);
+            }}
+    </script>
+</body>
+</html>
