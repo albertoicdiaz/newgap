@@ -11,7 +11,6 @@ from django.http import HttpResponse
 from django.http import HttpResponseRedirect
 from django.db.models import Sum, F, Case, When, IntegerField
 from django.db.models.functions import Coalesce
-import mysql.connector
 
 
 def welcome(request):
