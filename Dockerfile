@@ -1,12 +1,6 @@
-FROM python:3.7-alpine
-MAINTAINER Alberto Calvo
-
+FROM python:3.7
 ENV PYTHONUNBUFFERED 1
-
-COPY ./requirements.txt /requirements.txt
-RUN pip install -r /requirements.txt
-
-COPY ./users /users
-
-RUN adduser -D user
-USER user
+WORKDIR /code
+ADD ./requirements.txt /code/
+RUN pip3 install --no-cache-dir -r requirements.txt
+ADD . /code/

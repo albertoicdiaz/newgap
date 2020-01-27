@@ -28,7 +28,7 @@
                     <div class="dropdown profile-element">
                         <img alt="image" class="rounded-circle" src="{% static 'img/profile_small.jpg' %}"/>
                         <a data-toggle="dropdown" class="dropdown-toggle" href="#">
-                            <span class="block m-t-xs font-bold">{{request.user.first_name}}</span>
+                            <span class="block m-t-xs font-bold">{{request.user.username}}</span>
                             <span class="text-muted text-xs block">Opciones <b class="caret"></b></span>
                         </a>
                         <ul class="dropdown-menu animated fadeInRight m-t-xs">
@@ -60,52 +60,33 @@
                     </div>
                 </form>
             </div>
-            <!-- <div class="col-md-12">
-                <div class="inbox float-e-margins">
-                    <div class="inbox-title">
-                        <div class="selector-colegio" >
-                            <form>
-                                <div class="row  border-bottom white-bg dashboard-header">
-                                    <div class="col-md-3">
-                                        <label  class="font-normal">Colegio</label>
-                                        <select id="school-filter-selector" name="school" class="form-control m-b">
-                                            {% if schools|length == 0 or schools|length >= 1 %}
-                                            <option value ="0" >Seleccione Colegio</option >
-                                            {% endif %}
-                                            {% if schools %}
-                                            {% for school in schools %}
-                                            <option value ={{school.id}}>{{ school.name }}</option >
-                                            {% endfor %}
-                                            {% endif %}
-                                        </select>
-                                    </div>
-
-                                    <p class="col-lg-12">
-                                        <button class="btn btn-sm btn-primary m-t-n-xs float-right"><i class="fa fa-filter"></i> Filtrar</button>
-                                        <a href="/" class="btn btn-sm btn-secondary m-t-n-xs float-right" style="margin-right: 5px"><i class="fa fa-trash"></i> Limpiar</a>
-                                    </p>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div> -->
-            <!-- </div> -->
         </div>
-
         {% if dominio_num == 0 %}
-        <div class="wrapper wrapper-content">
-            <div class="row">
-                <div class="col-sm-3">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">Dominio N°1: Política Seguridad</h5>
-                            <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
-                            <form method="GET"><input type="hidden" name="dominio" value="1">
-                                <button type="submit" class="btn btn-primary">Realizar preguntas</button>
-                            </form>
+            <div class="wrapper wrapper-content">
+                <div class="row">
+                    {% if dom_description %}
+                        {% for dominio in dom_description %}
+                        <div class="col-sm-3 mb-3">    
+                            <div class="card" style="height: 200px;">
+                                <div class="card-body">
+                                    <h4 class="card-title">Dominio N°{{dominio.id}} : {{dominio.name}}</h4>
+                                    <p class="card-text">{{dominio.description}}</p>
+                                </div>
+                                <div class="card-footer text-muted">
+                                    <form method="GET"><input type="hidden" name="dominio" value={{dominio.id}}>
+                                        <button type="submit" class="btn btn-primary">Realizar preguntas</button>
+                                    </form>
+                                </div>
+                            </div>
                         </div>
-                    </div>
+                        {% endfor %}
+                    {% endif %}
                 </div>
+            </div>
+        {% endif %}
+        <!-- {% if dominio_num == 0 %}
+        <div class="wrapper wrapper-content">
+
                 <div class="col-sm-3">
                     <div class="card">
                         <div class="card-body">
@@ -187,7 +168,7 @@
                 </div>
               </div>
         </div>
-        {% endif %}
+        {% endif %} -->
 
         {% if dominio_num != 0 %}
             <table class="table">
@@ -199,19 +180,19 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% if questions_quantity %}
-                        {% for questions in questions_quantity %}
+                    {% if questions %}
+                        {% for question in questions %}
                             <tr>
-                                <th scope="row">{{questions.id}}</th>
-                                <td>{{questions.question}}</td>
+                                <th scope="row">{{question.pk}}</th>
+                                <td>{{question.pregunta}}</td>
                                 <td>
                                     <div class="custom-control custom-radio">
-                                        <input type="radio" id="customRadio1-{{questions.id}}" name="customRadio-{{questions.id}}" value="{{request.user.username}}-{{questions.id}}-1" class="custom-control-input">
-                                        <label class="custom-control-label" for="customRadio1-{{questions.id}}">Si</label>
+                                        <input type="radio" id="customRadio1-{{question.pk}}" name="customRadio-{{question.pk}}" value="{{request.user.username}}-{{question.pk}}-1" class="custom-control-input">
+                                        <label class="custom-control-label" for="customRadio1-{{question.pk}}">Si</label>
                                     </div>
                                     <div class="custom-control custom-radio">
-                                        <input type="radio" id="customRadio2-{{questions.id}}" name="customRadio-{{questions.id}}" value="{{request.user.username}}-{{questions.id}}-0" class="custom-control-input">
-                                        <label class="custom-control-label" for="customRadio2-{{questions.id}}">No</label>
+                                        <input type="radio" id="customRadio2-{{question.id}}" name="customRadio-{{question.pk}}" value="{{request.user.username}}-{{question.pk}}-0" class="custom-control-input">
+                                        <label class="custom-control-label" for="customRadio2-{{question.pk}}">No</label>
                                     </div>
                                 </td>
                             </tr>             
@@ -228,11 +209,14 @@
                 }
                 function send_button(){
                     var array = []
-                    {% for questions in questions_quantity %}
-                        if ($('input[name="customRadio-{{questions.id}}"]').is(':checked')){
-                            array.push(document.querySelector('input[name="customRadio-{{questions.id}}"]:checked').value);
-                        }
-                    {% endfor%}
+                    {% if questions %}
+                        {% for question in questions %}
+                            if ($('input[name="customRadio-{{question.pk}}"]').is(':checked')){
+                                array.push(document.querySelector('input[name="customRadio-{{question.pk}}"]:checked').value);
+                            }
+                        {% endfor %}
+                    {% endif %}
+
                     console.log(array);
 
                     $.ajax({

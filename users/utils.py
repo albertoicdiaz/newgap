@@ -6,8 +6,8 @@ def get_from_db():
     cursor = db.cursor()
     return cursor
 
-def get_answers(request):
-    return ("SELECT * FROM respuesta")
+# def get_answers(request):
+#     return ("SELECT * FROM respuesta")
 
 def get_values_answer(request):
     return ('SELECT r.id_pregunta, p.seccion_id, p.dominio_id ,count(if(r.value=1,1,NULL)) as Si, count(if(r.value=0,1,NULL)) as No from respuesta r,pregunta p where r.id_pregunta=p.id_pregunta group by p.id_pregunta')
