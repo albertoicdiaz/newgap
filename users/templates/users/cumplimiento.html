@@ -1,0 +1,374 @@
+<!--{% load staticfiles %}-->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-U A-Compatible" content="IE=edge">
+    <title>GAP ANALYSIS | Dashboard</title>
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/font-awesome.css' %}" rel="stylesheet">
+    <!-- Toastr style -->
+    <link href="{% static 'css/plugins/toastr/toastr.min.css' %}" rel="stylesheet">
+    <!-- Gritter -->
+    <link href="{% static 'css/plugins/gritter/jquery.gritter.css' %}" rel="stylesheet">
+    <link href="{% static 'css/animate.css' %}" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.4/jspdf.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/json2/20160511/json2.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/data.js"></script>
+    <script src="https://code.highcharts.com/modules/drilldown.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/export-data.js"></script>
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+</head>
+<body>
+<div id="wrapper">
+    <nav class="navbar-default navbar-static-side" role="navigation">
+        <div class="sidebar-collapse">
+            <ul class="nav metismenu" id="side-menu">
+                <li class="nav-header">
+                    <div class="dropdown profile-element">
+                        <img alt="image" class="rounded-circle" src="{% static 'img/profile_small.jpg' %}"/>
+                        <a data-toggle="dropdown" class="dropdown-toggle" href="#">
+                            <span class="block m-t-xs font-bold">{{request.user.username}}</span>
+                            <span class="text-muted text-xs block">Opciones <b class="caret"></b></span>
+                        </a>
+                        <ul class="dropdown-menu animated fadeInRight m-t-xs">
+                            <li class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/logout">Cerrar sesión</a></li>
+                        </ul>
+                    </div>
+                    <div class="logo-element">
+                        GAP
+                    </div>
+                </li>
+                <li class="active">
+                    <a href="index.html"><i class="fa fa-th-large"></i> <span class="nav-label">Módulos</span> <span class="fa arrow"></span></a>
+                    <ul class="nav nav-second-level">
+                        <li class="active"><a href="{% url 'dashboard' %}">Responder Encuesta</a></li>
+                        {% if admin == 1 %}
+                            <li class="active"><a href="{% url 'graphs' %}">Resultados</a></li>
+                            <li class="active"><a href="{% url 'asign' %}">Asignar Encuesta</a></li>
+                            <li class="active"><a href="{% url 'history' %}">Historial de encuestas</a></li>
+                        {% endif %}
+                        </ul>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div id="page-wrapper" class="gray-bg dashbard-1">
+        <div class="row  border-bottom white-bg dashboard-header">
+            <div class="navbar-header">
+                <a class="navbar-minimalize minimalize-styl-2 btn btn-primary " href="#"><i class="fa fa-bars"></i> </a>
+                <form role="search" class="navbar-form-custom" action="search_results.html">
+                    <div class="form-group">
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="wrapper wrapper-content">
+            <div class="row">
+                <form>
+                    <div class="col-8 col-md-4 col-lg-12">
+                        <label class="text-muted">Seleccione una encuesta para ver los resultados</label>
+                        <div class="input-group mb-6">
+                            <div class="input-group-prepend">
+                                <label class="input-group-text" for="survey-selector">Encuesta</label>
+                            </div>
+                            <select onchange="this.form.submit()" class="custom-select" id="survey-selector" name="survey" class="form-control m-b">
+                            {% if encuesta_selector|length <= 1 %} disabled {% endif %}
+                            <option selected value=0>Seleccione encuesta</option>
+                            <!-- <option value="1">Male</option>
+                            <option value="2">Female</option> -->
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        {% if encuesta_picker != 0 %}
+            <div class="row">
+                <div class="col-lg-12">
+                    <figure class="highcharts-figure">
+                        <div id="container"></div>
+                        <p class="highcharts-description">
+                            <p class="text-center" style="margin-bottom: 50px;">El gráfico muestra el porcentaje de cumplimiento de las preguntas contestadas por los empleados de la empresa.</p>
+                        </p>
+                    </figure>
+                </div>
+              </div>
+            <!-- <table id="myTable" style="margin-right: 0px;padding-right: 10px;margin-top: 20px;">
+              <tr id="contenido" style="color: blue;">
+                  <td>Dominio</td>
+                  <td>Resultado</td>
+                  <td>Recomendación</td>
+                </tr>
+            </table> -->
+            <h4>La siguiente tabla muestra todos los dominios, su índice de cumplimiento y su recomendación respecto a su índice.</h4>
+            <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th scope="col" style="text-align: center;"><h3>Dominio</h3></th>
+                    <th scope="col" style="text-align: center;"><h3>Cantidad de personas que respondieron el dominio</h3></th>
+                    <th scope="col" style="text-align: center;"><h3>Cumplimiento</h3></th>
+                    <th scope="col" style="text-align: center;"><h3>Porcentaje de desconocimiento</h3></th>
+                    <th scope="col" style="text-align: center;"><h3>Recomendación</h3></th>
+                  </tr>
+                </thead>
+                <tbody id="table-append">
+                    <!-- JS DEL FINAL -->
+                </tbody>
+              </table>
+        {% endif %}
+          </div>
+                <div>
+                    <strong>Copyright</strong>  &copy; 2020
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Mainly scripts -->
+    <script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+    <script src="{% static 'js/popper.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap.js' %}"></script>
+    <script src="{% static 'js/plugins/metisMenu/jquery.metisMenu.js' %}"></script>
+    <script src="{% static 'js/plugins/slimscroll/jquery.slimscroll.min.js' %}"></script>
+    <!-- Flot -->
+    <script src="{% static 'js/plugins/flot/jquery.flot.js' %}"></script>
+    <script src="{% static 'js/plugins/flot/jquery.flot.tooltip.min.js' %}"></script>
+    <script src="{% static 'js/plugins/flot/jquery.flot.spline.js' %}"></script>
+    <script src="{% static 'js/plugins/flot/jquery.flot.resize.js' %}"></script>
+    <script src="{% static 'js/plugins/flot/jquery.flot.pie.js' %}"></script>
+    <!-- Peity -->
+    <script src="{% static 'js/plugins/peity/jquery.peity.min.js' %}"></script>
+    <script src="{% static 'js/demo/peity-demo.js' %}"></script>
+    <!-- Custom and plugin javascript -->
+    <script src="{% static 'js/inspinia.js' %}"></script>
+    <script src="{% static 'js/plugins/pace/pace.min.js' %}"></script>
+    <!-- jQuery UI -->
+    <script src="{% static 'js/plugins/jquery-ui/jquery-ui.min.js' %}"></script>
+    <!-- GITTER -->
+    <script src="{% static 'js/plugins/gritter/jquery.gritter.min.js' %}"></script>
+    <!-- Sparkline -->
+    <script src="{% static 'js/plugins/sparkline/jquery.sparkline.min.js' %}"></script>
+    <!-- Sparkline demo data  -->
+    <script src="{% static 'js/demo/sparkline-demo.js' %}"></script>
+    <!-- ChartJS-->
+    <script src="{% static 'js/plugins/chartJs/Chart.min.js' %}"></script>
+    <!-- Toastr -->
+    <script src="{% static 'js/plugins/toastr/toastr.min.js' %}"></script>
+    <!-- Date range picker -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+
+
+
+<script>
+    // Create the chart
+
+    var value = []; //cumplimiento dominio
+    var value2 = []; //cumplimiento seccion
+    var value3 = []; //desconocimiento
+    var recomendationslow = ["Se recomienda la realización de una política de seguridad informática, que debe contener los conceptos de seguridad de la información, una estructura para establecer los objetivos y las formas de control y el compromiso de la dirección con políticas", "Se recomienda establecer una estructura para implementar la seguridad de la información en una empresa y de esta manera gestionarla de manera adecuada. Para ello, las actividades de seguridad de la información deben ser coordinadas por medio de representantes de la organización", "Se recomienda establecer parámetros para la clasificacion de activos, tales como: dueño, una clasificación de seguridad definida y acordada y restricción de accesos que deben ser revisados regularmente", "Se recomienda realizar charlas al equipo de trabajo de la empresa respecto a las políticas de seguridad informática de la empresa", "Se recomienda que los equipos y instalaciones de procesamiento de información critica o sensible deben mantenerse en áreas seguras, con niveles y controles de acceso apropiados, incluyendo protección contra amenazas físicas y ambientales", "Se recomienda que los procedimientos y responsabilidades por la gestión y operación de todos los recursos de procesamiento de la información estén definidos. Esto incluye la gestión de servicio tercerizados, la planificación de recurso del sistema para minimizar el riesgo de fallas, la creación de procedimientos para la generación de copias de seguridad y su recuperación", "Se recomienda que los recursos de procesamiento de la información y los procesos de negocios deben ser controlados con base en los requisitos de negocio y en la seguridad de la información", "Se recomienda que los requisitos de seguridad de los sistema de información debe ser identificados y acordados antes de su desarrollo y/o de su implementación, para que así puedan ser protegidos para el mantenimiento de su confidencialidad, autenticidad o integridad por medio criptográficos", "Se recomienda que los procedimientos formales de registro y escalonamiento deben ser establecidos y los empleados, proveedores y terceros deber ser conscientes de los procedimientos para notificar los eventos de seguridad de la información para asegurar que se comuniquen lo más rápido posible y corregidos en tiempo hábil", "Se recomienda que los planes de continuidad del negocio deben ser desarrollados e implementados, con el fin de impedir la interrupción de las actividades del negocio y asegurar que las operaciones esenciales sean rápidamente recuperadas", "Se recomiendacontratar una consultoría especializada, para que verifique su cumplimiento y adherencia a los requisitos legales y reglamentarios"];
+    var recomendationsmedium = ["Si bien, la empresa cumple los estándares medios para este dominio, se recomienda realizar revisiones periódicas de la polItica de seguridad establecida en la empresa y establecer compromisos de la gerencia a la administración de seguridad informática", "Si bien, la empresa cumple los estándares medios para este dominio, se recomienda demostrar apoyo activo de la gerencia de la empresa a las medidas de seguridad de la empresa y los representates de la organización en ámbitos de seguridad de la información deben tener responsabilidad bien definidas y proteger las informaciones de carácter confidencial", "Si bien, la empresa cumple con los estándares medios para este dominio, se recomienda identificar y clasificar los activos, de modo que un inventario pueda ser estructurado y posteriormente mantenido. Además, deben seguir reglas documentadas, que definen que tipo de uso se permite con dichos activos", "Se recomienda que los empleados de la organización reciban entrenamiento adecuado de seguridad correspondiente a sus funciones", "Si bien, la empresa cumple los estándares medios para este dominio, se recomienda realizar revisiones periódicas a los sistemas de información sensible para asegurar el cumplimiento de seguridad de este", "Si bien, la empresa cumple los estándares medios para este dominio, se recomienda efectuar auditorias sobre los servicios de terceros, reportes y registros en forma reiterada", "Si bien, la empresa cumple los estándares medios para este dominio, se recomienda garantizar el acceso de cada usuario autorizado y prevenir el acceso no autorizados a los sistema de información de manera que evite daños a documentos y recursos de procesamiento de la información que estén fuera de alcance de cualquiera", "Si bien, la empresa cumple los estándares medios para este dominio, se recomienda realizar seguimiento a la confidencialidad y autenticidad de los requisitos de seguiridad de los sistemas de información", "Si bien, la empresa cumple los estándares medios para este dominio, se recomienda realizar seguimiento a los SLA de los incidentes de seguridad informática para comprobar si se están respetando los tiempos definidos", "Si bien, la empresa cumple los estándares medios para este dominio, se recomienza realizar seguimiento y control a los planes de continuidad de negocios para asegurarse del cumplimiento de estos", "Si bien, la empresa cumple los estándares medios para este dominio, se recomienda realizar una revisión para evitar la violación de cualquier ley criminal o civil, garantizando estatutos, regulación u obligaciones contractuales y de cualesquiera requisitos de seguridad de la información"];
+    var recomendationshigh = ["Dado el Indice alto de este dominio, sólo se recomiendan revisiones periódicas de las políticas de seguridad de la empresa", "Dado el índice alto de este dominio, solo se recomiendan la revisión periódica del cumplimiento de las actividades y responsabilidades de la empresa en el ámbito de seguridad informática", "Dado el Indice alto de este dominio, solo se recomienda realizar revisiones de los activos de la empresa de modo que no existan errores en el inventario de ellos", "Dado el Indice alto de este dominio, solo se recomienda la revisión periodica de seguridad de acuerdo con políticas y procedimiento establecidos por la organización", "Dado el índice alto de este dominio, solo se recomienda la revisión periódica de cumplimiento de este dominio", "Dado el índice alto de este dominio, solo se recomienda la revisión periódica de cumplimiento de este dominio", "Dado el índice alto de este dominio, solo se recomienda la revisión periódica de cumplimiento de este dominio", "Dado el índice alto de este dominio, solo se recomienda la revisión periódica de cumplimiento de este dominio", "Dado el índice alto de este dominio, solo se recomienda la revisión periódica de cumplimiento de este dominio", "Dado el índice alto de este dominio, solo se recomienda la revisión periódica de cumplimiento de este dominio", "Dado el índice alto de este dominio, solo se recomienda la revisión periódica de cumplimiento de este dominio"];
+    var encuesta_select = [];
+    var encuesta_id = [];
+    {% if encuesta_selector %}
+        {% for encuesta in encuesta_selector %}
+            encuesta_select.push(("{{encuesta.fecha_inicio}}") + " A " + ("{{encuesta.fecha_termino}}"));
+            encuesta_id.push("{{encuesta.id}}");
+        {% endfor %}
+    {% endif %}
+
+    for (i=0;i<{{encuesta_number}};i++)
+    {
+        console.log(encuesta_select[i]);
+        $('#survey-selector').append(`
+                                <option value=${encuesta_id[i]}>${encuesta_select[i]}</option>
+                            `);
+    }
+    {% if percentage_by_dom %}
+        {% for percentage in percentage_by_dom %}
+            
+            value.push({{percentage.value}});
+        {% endfor %}
+    {% endif %}
+
+    {% if percentage_by_section %}
+        {% for percentage in percentage_by_section %}
+            
+            value2.push({{percentage.percentage}});
+        {% endfor %}
+    {% endif %}
+
+    {% if percentage_unknown %}
+        {% for percentage in percentage_unknown %}
+            
+            value3.push({{percentage.value}});
+        {% endfor %}
+    {% endif %}
+
+    value = value.map(Number);
+    value2 = value2.map(Number);
+    value3 = value3.map(Number);
+    if ($('#container').length){
+        Highcharts.chart('container', {
+            chart: {
+                type: 'column'
+            },
+            title: {
+                text: 'Resultados encuesta GAP para {{empresa}} desde el {{fechainicio}} hasta el {{fechafin}}'
+            },
+            subtitle: {
+                text: '<span style="color: red">Click en las columnas para ver en detalle</span>'
+            },
+            accessibility: {
+                announceNewData: {
+                    enabled: true
+                }
+            },
+            xAxis: {
+                type: 'category'
+            },
+            yAxis: {
+                max: 100,
+                title: {
+                    text: 'Porcentaje de cumplimiento'
+                }
+
+            },
+            legend: {
+                enabled: false
+            },
+            plotOptions: {
+                series: {
+                    borderWidth: 0,
+                    dataLabels: {
+                        enabled: true,
+                        format: '{point.y:.1f}%'
+                    }
+                }
+            },
+
+            tooltip: {
+                headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
+                pointFormat: '<span style="color:{point.color}">{point.name}</span>: <b>{point.y:.2f}%</b> of total<br/>'
+            },
+
+            series: [
+                {
+                    name: "Dominios",
+                    colorByPoint: true,
+                    data: [
+                        {% if percentage_by_dom %}
+                            {% for percentage_dom in percentage_by_dom %}
+                            {
+                                name: "Dominio {{percentage_dom.id}}",
+                                y: value[{{percentage_dom.id}}-1],
+                                drilldown: "Dominio {{percentage_dom.id}}"
+                            },
+                            {% endfor %}
+                        {% endif %}
+                    ]
+                }
+            ],
+
+            drilldown: {
+                series: [
+                    {% if percentage_by_dom %}
+                        {% for percentage_dom in percentage_by_dom %}
+                        {
+
+                            name:"Dominio {{percentage_dom.id}}",
+                            id: "Dominio {{percentage_dom.id}}",
+                            data: [
+                                    {% for percentage_section in percentage_by_section %}
+                                        {% if percentage_dom.id == percentage_section.dom %}
+                                            [
+                                                '{{percentage_section.name}}',
+                                                value2[{{percentage_section.id}}-1]
+                                            ],
+                                        {% endif %}
+                                    {% endfor %}
+                            ]
+                        },
+                        {% endfor %}
+                    {% endif %}
+                ]
+            }
+        });
+    }
+
+    for (i=0;i<value.length;i++)
+    {
+        if(value[i]<45)
+        {
+            $('#table-append').append(`
+                                    <tr>
+                                        <th scope="row" style="text-align: center;"><b>${i+1}</b></th>
+                                        <td style="text-align: center;"><b>10</b></td>
+                                        <td style="text-align: center;"><b>Bajo</b></td>
+                                        <td style="text-align: center;"><b>${value3[i]}%</b></td>
+                                        <td><b>${recomendationslow[i]}</b></td>
+                                    </tr>
+                                `);
+        }
+        else if(value[i]>=45 && value[i]<=70)
+        {
+            $('#table-append').append(`
+                                    <tr>
+                                        <th scope="row" style="text-align: center;"><b>${i+1}</b></th>
+                                        <td style="text-align: center;"><b>10</b></td>
+                                        <td style="text-align: center;"><b>Medio</b></td>
+                                        <td style="text-align: center;"><b>${value3[i]}%</b></td>
+                                        <td><b>${recomendationsmedium[i]}</b></td>
+                                    </tr>
+                            `);
+        }
+        else if (value[i]>71 && value[i]<100)
+        {
+            $('#table-append').append(`
+                                    <tr>
+                                        <th scope="row" style="text-align: center;"><b>${i+1}</b></th>
+                                        <td style="text-align: center;"><b>10</b></td>
+                                        <td style="text-align: center;"><b>Alto</b></td>
+                                        <td style="text-align: center;"><b>${value3[i]}%</b></td>
+                                        <td><b>${recomendationshigh[i]}</b></td>
+                                    </tr>
+                            `);
+        }
+        else if (value[i]==100)
+        {
+            $('#table-append').append(`
+                                    <tr>
+                                        <th scope="row" style="text-align: center;"><b>${i+1}</b></th>
+                                        <td style="text-align: center;"><b>10</b></td>
+                                        <td style="text-align: center;"><b>Perfecto</b></td>
+                                        <td style="text-align: center;"><b>${value3[i]}%</b></td>
+                                        <td><b>El porcentaje del dominio es 100%, se cumplen todas las políticas y protocolos estipulados.</b></td>
+                                    </tr>
+                            `);
+        }
+
+    }
+
+    function setFilterSelectors(params){
+            let queryString = location.search;
+            let urlParams = new URLSearchParams(queryString);
+            let param = null;
+            for(let i = 0; i < params.length; i++ ) {
+                param = urlParams.get(params[i])
+                if(param && param != 0){
+                    document.getElementById(params[i] + "-selector").value = param
+                }
+            }
+        }
+        setFilterSelectors(['survey'])
+</script>
+</body>
+</html>

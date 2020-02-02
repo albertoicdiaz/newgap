@@ -8,15 +8,20 @@
     <title>GAP ANALYSIS | Dashboard</title>
     <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
     <link href="{% static 'css/font-awesome.css' %}" rel="stylesheet">
+    <link href="{% static 'css/plugins/ios8-switch/ios8-switch.css' %}" rel="stylesheet">
     <!-- Toastr style -->
     <link href="{% static 'css/plugins/toastr/toastr.min.css' %}" rel="stylesheet">
     <!-- Gritter -->
     <link href="{% static 'css/plugins/gritter/jquery.gritter.css' %}" rel="stylesheet">
+    
     <link href="{% static 'css/animate.css' %}" rel="stylesheet">
     <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <link rel="stylesheet" href={% static 'js/switchery.css' %} />
+    <script src={% static 'js/switchery.js' %}></script>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.4/jspdf.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/json2/20160511/json2.js"></script>
 </head>
 <body>
@@ -44,7 +49,11 @@
                     <a href="index.html"><i class="fa fa-th-large"></i> <span class="nav-label">Módulos</span> <span class="fa arrow"></span></a>
                     <ul class="nav nav-second-level">
                         <li class="active"><a href="{% url 'dashboard' %}">Responder Encuesta</a></li>
-                        <li class="active"><a href="{% url 'graphs' %}">Resultados</a></li>
+                        {% if admin == 1 %}
+                            <li class="active"><a href="{% url 'graphs' %}">Resultados</a></li>
+                            <li class="active"><a href="{% url 'asign' %}">Asignar Encuesta</a></li>
+                            <li class="active"><a href="{% url 'history' %}">Historial de encuestas</a></li>
+                        {% endif %}
                         </ul>
                 </li>
             </ul>
@@ -63,112 +72,63 @@
         </div>
         {% if dominio_num == 0 %}
             <div class="wrapper wrapper-content">
-                <div class="row">
+                {% if checkasign == 1 %}
                     {% if dom_description %}
-                        {% for dominio in dom_description %}
-                        <div class="col-sm-3 mb-3">    
-                            <div class="card" style="height: 200px;">
-                                <div class="card-body">
-                                    <h4 class="card-title">Dominio N°{{dominio.id}} : {{dominio.name}}</h4>
-                                    <p class="card-text">{{dominio.description}}</p>
+                        <h2>Encuesta disponible hasta el {{fechafin}}</h2>
+                        <h2>Dominios por responder</h2>
+                        <div class="row">
+                                {% for dominio in dom_description %}
+                                <div class="col-sm-3 mb-3">    
+                                    <div class="card" style="height: 210px;">
+                                        <div class="card-body">
+                                            <h4 class="card-title">Dominio N°{{dominio.id}} : {{dominio.name}}</h4>
+                                            <p class="card-text">{{dominio.description}}</p>
+                                        </div>
+                                        <div class="card-footer text-muted">
+                                            <form method="GET"><input type="hidden" name="dominio" value={{dominio.id}}>
+                                                <button type="submit" class="btn btn-primary">Realizar preguntas</button>
+                                            </form>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="card-footer text-muted">
-                                    <form method="GET"><input type="hidden" name="dominio" value={{dominio.id}}>
-                                        <button type="submit" class="btn btn-primary">Realizar preguntas</button>
-                                    </form>
-                                </div>
+                                {% endfor %}
                             </div>
-                        </div>
-                        {% endfor %}
+                    {% else %}
+                    <div class="row">
+                        <h3>Ya respondió toda la encuesta</h3>
+                    </div>
                     {% endif %}
+                    {% if dominio_answered %}
+                        <h2>Dominios respondidos</h2>
+                            <div class="row">
+                                {% for dominio in dominio_answered %}
+                                    <div class="col-sm-3 mb-3">    
+                                        <div class="card" style="height: 210px;">
+                                            <div class="card-body">
+                                                <h4 class="card-title">Dominio N°{{dominio.id}} : {{dominio.name}}</h4>
+                                                <p class="card-text">{{dominio.description}}</p>
+                                            </div>
+                                            <div class="card-footer text-muted">
+                                                <form method="GET"><input type="hidden" name="dominio" value={{dominio.id}}>
+                                                    <button type="submit" class="btn btn-primary" disabled>Respondido</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                    {% endif %}
+                {% elif encuesta_sinabrir == 1 %}
+                <div class="row">
+                    <h3>La encuesta se abrirá el {{fechasinabrir}}</h3>
                 </div>
+                {% else %}
+                <div class="row">
+                    <h3>No tiene ninguna encuesta asignada a su nombre</h3>
+                </div>
+                {% endif %}
             </div>
         {% endif %}
-        <!-- {% if dominio_num == 0 %}
-        <div class="wrapper wrapper-content">
-
-                <div class="col-sm-3">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">Dominio N°2: Organización de la Seguridad Informática</h5>
-                            <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
-                            <form method="GET"><input type="hidden" name="dominio" value="2">
-                                <button type="submit" class="btn btn-primary">Realizar preguntas</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-3">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">Dominio N°3: Administración Activos</h5>
-                            <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
-                            <form method="GET"><input type="hidden" name="dominio" value="3">
-                                <button type="submit" class="btn btn-primary">Realizar preguntas</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-3">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">Dominio N°4: Seguridad Recursos Humanos</h5>
-                            <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
-                            <form method="GET"><input type="hidden" name="dominio" value="4">
-                                <button type="submit" class="btn btn-primary">Realizar preguntas</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-              </div>
-              <div class="row" style="margin-top:30px;">
-                <div class="col-sm-3">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">Dominio N°5: Seguridad Física y Ambiental</h5>
-                            <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
-                            <form method="GET"><input type="hidden" name="dominio" value="5">
-                                <button type="submit" class="btn btn-primary">Realizar preguntas</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-3">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">Dominio N°6: Administración Comunicaciones y Operaciones</h5>
-                            <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
-                            <form method="GET"><input type="hidden" name="dominio" value="6">
-                                <button type="submit" class="btn btn-primary">Realizar preguntas</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-3">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">Dominio N°7: Control de Accesos</h5>
-                            <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
-                            <form method="GET"><input type="hidden" name="dominio" value="7">
-                                <button type="submit" class="btn btn-primary">Realizar preguntas</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-3">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">Dominio N°8: Adquisición, desarrollo y mantenimiento de Sistemas Informáticos</h5>
-                            <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
-                            <form method="GET"><input type="hidden" name="dominio" value="8">
-                                <button type="submit" class="btn btn-primary">Realizar preguntas</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-              </div>
-        </div>
-        {% endif %} -->
 
         {% if dominio_num != 0 %}
             <table class="table">
@@ -185,7 +145,7 @@
                             <tr>
                                 <th scope="row">{{question.pk}}</th>
                                 <td>{{question.pregunta}}</td>
-                                <td>
+                                <td style="right: 15px;">
                                     <div class="custom-control custom-radio">
                                         <input type="radio" id="customRadio1-{{question.pk}}" name="customRadio-{{question.pk}}" value="{{request.user.username}}-{{question.pk}}-1" class="custom-control-input">
                                         <label class="custom-control-label" for="customRadio1-{{question.pk}}">Si</label>
@@ -194,12 +154,27 @@
                                         <input type="radio" id="customRadio2-{{question.id}}" name="customRadio-{{question.pk}}" value="{{request.user.username}}-{{question.pk}}-0" class="custom-control-input">
                                         <label class="custom-control-label" for="customRadio2-{{question.pk}}">No</label>
                                     </div>
+                                    <div class="custom-control custom-radio">
+                                        <input type="radio" id="customRadio3-{{question.id}}" name="customRadio-{{question.pk}}" value="{{request.user.username}}-{{question.pk}}-2" class="custom-control-input">
+                                        <label class="custom-control-label" for="customRadio3-{{question.pk}}">Desconozco</label>
+                                    </div>
+                                    <!-- <div style="margin-bottom: 5px;">
+                                      <input type="checkbox" name="yes" class="onoffswitch-checkbox"/>Sí
+                                    </div>
+                                    <div style="margin-bottom: 5px;">
+                                      <input type="checkbox" name="no" class="ios8-switch"/>No
+                                    </div>
+                                    <div style="margin-bottom: 5px;">
+                                      <input type="checkbox" name="subject" class="ios8-switch"/>No sé
+                                    </div> -->
                                 </td>
                             </tr>             
                         {% endfor%}
                     {% endif%}
                 </tbody>
             </table>
+            <script>
+            </script>
             <button class="btn btn-sm btn-primary m-t-n-xs float-right" style="margin-right: 30px;" onclick="send_button();"><i class="fa fa-check-square-o"></i> Enviar</button>
             <button class="btn btn-sm btn-primary m-t-n-xs float-right" style="margin-right: 30px;" onclick="clear_radio();"><i class="fa fa-check-square"></i> Limpiar</button>
         {% endif %}
@@ -217,7 +192,7 @@
                         {% endfor %}
                     {% endif %}
 
-                    console.log(array);
+                    // console.log(array);
 
                     $.ajax({
                     type: "POST",
@@ -227,6 +202,8 @@
                         text: array},   
                     success:  function(response){
                         alert(response);
+
+                        window.location.href = '{% url 'dashboard' %}';
                         }
                     });
                 }
@@ -234,33 +211,6 @@
 
                 <div>
                     <strong>Copyright</strong>  &copy; 2020
-
-
-                    <!-- Button trigger modal -->
-                    <button type="button" class="btn btn-link btn-sm" data-toggle="modal" data-target="#queriesModal">
-                        queries
-                    </button>
-
-                    <!-- Modal -->
-                    <div class="modal fade" id="queriesModal" tabindex="-1" role="dialog" aria-labelledby="queriesModalTitle" aria-hidden="true">
-                        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="queriesModalTitle">Generated queries</h5>
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-                                </div>
-                                <div class="modal-body">
-                                    <ul>
-                                        {% for query in queries %}
-                                        <li><strong>{{query.name}}</strong>: {{query.query}}</li>
-                                        {% endfor %}
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -324,6 +274,40 @@
                 return (baseWidth / datasetCount);
             }
         }
+        
+    // defaults = {
+    // color             : '#64bd63'
+    // , secondaryColor    : '#dfdfdf'
+    // , jackColor         : '#fff'
+    // , jackSecondaryColor: null
+    // , className         : 'switchery'
+    // , disabled          : false
+    // , disabledOpacity   : 0.5
+    // , speed             : '0.5s'
+    // , size              : 'small'
+    // }
+
+    // //var elem = document.querySelector('.js-switch');
+    // //var init = new Switchery(elem, defaults); 
+
+
+    // var elems = Array.prototype.slice.call(document.querySelectorAll('.js-switch'));
+
+    // elems.forEach(function(html) {
+    // var switchery = new Switchery(html,defaults);
+    // });
+
+    // $('.js-switch').on('change', function() {
+    //     $(this).closest('td').find('.js-switch').prop('checked', true   );
+        
+    //     // .each(function(index, item){
+           
+    //     //    $(item).trigger('click').attr("checked", "checked");
+    //     // });
+    //     $(this).trigger('click').attr("checked", "checked");
+       
+    //     //$('input.js-switch').not(this).prop('checked', false);  
+    // });
     </script>
 </body>
 </html>
