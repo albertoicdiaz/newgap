@@ -13,6 +13,7 @@ from django.db.models import Sum, F, Case, When, IntegerField
 from django.db.models.functions import Coalesce
 import datetime
 from datetime import datetime
+import time
 
 
 def welcome(request):
@@ -365,7 +366,11 @@ def ajaxasign(request):
     trabajadores = request.POST.getlist('users[]')
     dateinicio=datepickers[0]
     datefin=datepickers[1]
-    if (datefin<dateinicio):
+    dateinicio1=time.strptime(datepickers[0],"%d/%m/%Y")
+    datefin1=time.strptime(datepickers[1],"%d/%m/%Y")
+    print ("inicio",dateinicio)
+    print ("fin",datefin)
+    if (datefin1<dateinicio1):
         return HttpResponse("Hay un error en las fechas ingresadas")
     else:
         dateinicio2= dateinicio[6:]+ "-" +dateinicio[3:5] + "-" + dateinicio[:2]
