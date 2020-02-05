@@ -235,6 +235,11 @@ def graphs (request):
     trabajador = Trabajador.objects.get(usuario__credenciales=request.user.id)
     encuestas = Encuesta.objects.filter(supervisor=request.user.id)
     answers_per_dom = []
+    aux = Usuario.objects.get(credenciales=request.user.id)
+    if (str(aux.tipo_usuario) == 'Administrador'):
+        admin=1
+    else:
+        admin=0
     for encuesta in encuestas:
         array_encuesta.append({'id': encuesta.id, 'fecha_inicio':str(datetime.strptime(str(encuesta.fecha_inicio), '%Y-%m-%d').strftime('%d/%m/%Y')), 'fecha_termino':str(datetime.strptime(str(encuesta.fecha_termino), '%Y-%m-%d').strftime('%d/%m/%Y'))})
 
@@ -300,12 +305,24 @@ def graphs (request):
             
             print (usuarios_respondidos)
             print (respondidas_array)
-            
-    aux = Usuario.objects.get(credenciales=request.user.id)
-    if (str(aux.tipo_usuario) == 'Administrador'):
-        admin=1
-    else:
-        admin=0
+        else:
+            return render(
+                request,
+                "users/graphs.html",
+                {
+                    'percentage_by_dom':percentage_by_dom,
+                    'percentage_by_section':percentage_by_section,
+                    'percentage_unknown':percentage_unknown_dom,
+                    'empresa':trabajador.empresa,
+                    'admin':admin,
+                    'encuesta_selector':(array_encuesta),
+                    'encuesta_number':len(array_encuesta),
+                    'encuesta_picker':0,
+                    'fechafin':fechafin,
+                    'fechainicio':fechainicio,
+                    'respondidas_array':respondidas_array,
+                })
+
     # print (percentage_by_section)
     # print ("encuesta numm", encuesta_num)
     
