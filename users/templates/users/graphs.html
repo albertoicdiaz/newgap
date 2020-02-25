@@ -24,6 +24,7 @@
     <script src="https://code.highcharts.com/modules/exporting.js"></script>
     <script src="https://code.highcharts.com/modules/export-data.js"></script>
     <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+
 </head>
 <body>
 <div id="wrapper">
@@ -54,6 +55,8 @@
                             <li class="active"><a href="{% url 'graphs' %}">Resultados</a></li>
                             <li class="active"><a href="{% url 'asign' %}">Asignar Encuesta</a></li>
                             <li class="active"><a href="{% url 'history' %}">Historial de encuestas</a></li>
+                            <li class="active"><a href="{% url 'carga' %}">Carga de usuarios</a></li>
+                            <li class="active"><a href="{% url 'responsible' %}">Responsables por dominio</a></li>
                         {% endif %}
                         </ul>
                 </li>
@@ -83,62 +86,161 @@
                             </div>
                             <select onchange="this.form.submit()" class="custom-select" id="survey-selector" name="survey" class="form-control m-b">
                             {% if encuesta_selector|length <= 1 %} disabled {% endif %}
-                            <option selected value=0>Seleccione encuesta</option>
+                            <option selected value=0 href="{% url 'graphs' %}">Seleccione encuesta</option>
                             </select>
                         </div>
                     </div>
                 </form>
+
             </div>
         {% if encuesta_picker != 0 %}
-        <div class="row" style="margin-top: 30px;margin-bottom: 30px;">
-            <h4>La siguiente tabla muesta el número de preguntas respondidas por dominio de los asignados a la encuesta</h4>
-            <table class="table table-striped">
-                <thead>
-                  <tr>
-                    <th scope="col" style="text-align: center;"><h3>Apellido Paterno</h3></th>
-                    <th scope="col" style="text-align: center;"><h3>Apellido Materno</h3></th>
-                    <th scope="col" style="text-align: center;"><h3>Nombre</h3></th>
-                    <th scope="col" style="text-align: center;"><h3>Cargo</h3></th>
-                    <th scope="col" style="text-align: center;"><h3>Dom 1</h3></th>
-                    <th scope="col" style="text-align: center;"><h3>Dom 2</h3></th>
-                    <th scope="col" style="text-align: center;"><h3>Dom 3</h3></th>
-                    <th scope="col" style="text-align: center;"><h3>Dom 4</h3></th>
-                    <th scope="col" style="text-align: center;"><h3>Dom 5</h3></th>
-                    <th scope="col" style="text-align: center;"><h3>Dom 6</h3></th>
-                    <th scope="col" style="text-align: center;"><h3>Dom 7</h3></th>
-                    <th scope="col" style="text-align: center;"><h3>Dom 8</h3></th>
-                    <th scope="col" style="text-align: center;"><h3>Dom 9</h3></th>
-                    <th scope="col" style="text-align: center;"><h3>Dom 10</h3></th>
-                    <th scope="col" style="text-align: center;"><h3>Dom 11</h3></th>
-                  </tr>
-                </thead>
-                <tbody id="table-append2">
-                    {% if respondidas_array %}
-                      {% for respondida in respondidas_array %}
-                          <tr>
-                              <td>{{respondida.apellido_paterno}}</td>
-                              <td>{{respondida.apellido_materno}}</td>
-                              <td>{{respondida.nombre}}</td>
-                              <td>{{respondida.cargo}}</td>
-                              <td style="text-align: center;">{{respondida.Dom1}}</td>
-                              <td style="text-align: center;">{{respondida.Dom2}}</td>
-                              <td style="text-align: center;">{{respondida.Dom3}}</td>
-                              <td style="text-align: center;">{{respondida.Dom4}}</td>
-                              <td style="text-align: center;">{{respondida.Dom5}}</td>
-                              <td style="text-align: center;">{{respondida.Dom6}}</td>
-                              <td style="text-align: center;">{{respondida.Dom7}}</td>
-                              <td style="text-align: center;">{{respondida.Dom8}}</td>
-                              <td style="text-align: center;">{{respondida.Dom9}}</td>
-                              <td style="text-align: center;">{{respondida.Dom10}}</td>
-                              <td style="text-align: center;">{{respondida.Dom11}}</td>
-                          </tr>
-                      {% endfor %}
-                    {% endif %}
-                </tbody>
-              </table>
-        </div>
             <div class="row">
+                <div class="col-4">
+                    <button id="download-excel" type="submit" class="btn btn-primary" style="margin-top: 15px;">Descargar informe</button>
+                </div>
+            </div>
+            <div class="row" style="margin-top: 30px;margin-bottom: 30px;">
+                <h4>La siguiente tabla muesta el número de preguntas respondidas por dominio de los asignados a la encuesta</h4>
                 <div class="col-lg-12">
+                    <table class="table table-striped table-bordered" id="table-users" name="tables">
+                        <thead>
+                        <tr>
+                            <th scope="col" style="text-align: center;"><h3>Apellido Paterno</h3></th>
+                            <th scope="col" style="text-align: center;"><h3>Apellido Materno</h3></th>
+                            <th scope="col" style="text-align: center;"><h3>Nombre</h3></th>
+                            <th scope="col" style="text-align: center;"><h3>Cargo</h3></th>
+                            <th scope="col" style="text-align: center;"><h3>Dom 1</h3></th>
+                            <th scope="col" style="text-align: center;"><h3>Dom 2</h3></th>
+                            <th scope="col" style="text-align: center;"><h3>Dom 3</h3></th>
+                            <th scope="col" style="text-align: center;"><h3>Dom 4</h3></th>
+                            <th scope="col" style="text-align: center;"><h3>Dom 5</h3></th>
+                            <th scope="col" style="text-align: center;"><h3>Dom 6</h3></th>
+                            <th scope="col" style="text-align: center;"><h3>Dom 7</h3></th>
+                            <th scope="col" style="text-align: center;"><h3>Dom 8</h3></th>
+                            <th scope="col" style="text-align: center;"><h3>Dom 9</h3></th>
+                            <th scope="col" style="text-align: center;"><h3>Dom 10</h3></th>
+                            <th scope="col" style="text-align: center;"><h3>Dom 11</h3></th>
+                        </tr>
+                        </thead>
+                        <tbody id="table-append2">
+                            {% if respondidas_array %}
+                                {% for respondida in respondidas_array %}
+                                    <tr>
+                                        <td>{{respondida.apellido_paterno}}</td>
+                                        <td>{{respondida.apellido_materno}}</td>
+                                        <td>{{respondida.nombre}}</td>
+                                        <td>{{respondida.cargo}}</td>
+                                        <td style="text-align: center;">{{respondida.Dom1}}</td>
+                                        <td style="text-align: center;">{{respondida.Dom2}}</td>
+                                        <td style="text-align: center;">{{respondida.Dom3}}</td>
+                                        <td style="text-align: center;">{{respondida.Dom4}}</td>
+                                        <td style="text-align: center;">{{respondida.Dom5}}</td>
+                                        <td style="text-align: center;">{{respondida.Dom6}}</td>
+                                        <td style="text-align: center;">{{respondida.Dom7}}</td>
+                                        <td style="text-align: center;">{{respondida.Dom8}}</td>
+                                        <td style="text-align: center;">{{respondida.Dom9}}</td>
+                                        <td style="text-align: center;">{{respondida.Dom10}}</td>
+                                        <td style="text-align: center;">{{respondida.Dom11}}</td>
+                                    </tr>
+                                {% endfor %}
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="row" style="display: none;">
+                    <table class="table table-striped" id="table-answers" name="tables">
+                        <thead>
+                        <tr>
+                            <th scope="col" style="text-align: center;"><h3>Nombre Completo</h3></th>
+                            {% if preguntas_id %}
+                                {% for pregunta in preguntas_id %}
+                                    <th scope="col" style="text-align: center;"><h3>Pregunta {{pregunta.id}}</h3></th>
+                                {% endfor %}
+                            {% endif %}
+                        </tr>
+                        </thead>
+                        <tbody id="table-append3">
+                            {% if respuestas_array %}
+                                {% for respuesta in respuestas_array %}
+                                <tr>
+                                    <td style="text-align: center;">{{respuesta.apellido_paterno}} {{respuesta.apellido_materno}} {{respuesta.nombre}}</td>
+                                    {% if respuestas_array %}
+                                        {% for x in respuesta.respuestas %}
+                                            <td style="text-align: center;">{{x}}</td>
+                                        {% endfor %}
+                                    {% endif %}
+                                </tr>
+                                {% endfor %}
+                            {% endif %}
+                        </tbody>
+                    </table>
+            </div>
+            <div class="row" style="display:none">
+                <div class="col-lg-12">
+                    <table class="table table-striped" id="table-days" name="tables">
+                        <thead>
+                        <tr>
+                            <th scope="col" style="text-align: center;"><h3>Nombre Completo</h3></th>
+                            {% if fechas %}
+                                {% for fecha in fechas %}
+                                    <th scope="col" style="text-align: center;"><h3>{{fecha}}</h3></th>
+                                {% endfor %}
+                            {% endif %}
+                            <th scope="col" style="text-align: center;"><h3>Porcentaje de respondidas</h3></th>
+                        </tr>
+                        </thead>
+                        <tbody id="table-append3">
+                            {% if respuestasxdia %}
+                                {% for respuesta in respuestasxdia %}
+                                <tr>
+                                    <td style="text-align: center;">{{respuesta.apellido_paterno}} {{respuesta.apellido_materno}} {{respuesta.nombre}}</td>
+                                    {% if respuestasxdia %}              
+                                        {% for x in respuesta.respuestas %}
+                                            <td style="text-align: center;">{{x}}</td>
+                                        {% endfor %}
+                                    {% endif %}
+                                    <td style="text-align: center;">{{respuesta.percentage}}%</td>
+                                </tr>
+                                {% endfor %}
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="row" style="display:none">
+                <div class="col-lg-12">
+                    <table class="table table-striped" id="table-action" name="tables">
+                        <thead>
+                        <tr>
+                            <th scope="col" style="text-align: center;"><h3>Dominio</h3></th>
+                            <th scope="col" style="text-align: center;"><h3>Prioridad</h3></th>
+                            <th scope="col" style="text-align: center;"><h3>Duración</h3></th>
+                            <th scope="col" style="text-align: center;"><h3>Responsable</h3></th>
+                            <th scope="col" style="text-align: center;"><h3>Plan de acción</h3></th>
+                            <th scope="col" style="text-align: center;"><h3>Plazo de inicio</h3></th>
+                            <th scope="col" style="text-align: center;"><h3>Plazo de finalización</h3></th>
+                        </tr>
+                        </thead>
+                        <tbody id="table-append3">
+                        {% if action_plan %}
+                            {% for plan in action_plan %}
+                                <tr>
+                                    <td style="text-align: center;">{{plan.id}}</td>
+                                    <td style="text-align: center;">{{plan.prioridad}}</td>
+                                    <td style="text-align: center;">{{plan.SLA}}</td> 
+                                    <td style="text-align: center;">{{plan.responsable}}</td>
+                                    <td style="text-align: center;">{{plan.action}}</td>
+                                    <td style="text-align: center;">{{plan.initial_date}}</td>
+                                    <td style="text-align: center;">{{plan.final_date}}</td>
+                            {% endfor %}
+                        {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-11">
                     <figure class="highcharts-figure">
                         <div id="container"></div>
                         <p class="highcharts-description">
@@ -146,28 +248,159 @@
                         </p>
                     </figure>
                 </div>
-              </div>
-            <!-- <table id="myTable" style="margin-right: 0px;padding-right: 10px;margin-top: 20px;">
-              <tr id="contenido" style="color: blue;">
-                  <td>Dominio</td>
-                  <td>Resultado</td>
-                  <td>Recomendación</td>
-                </tr>
-            </table> -->
-            <h4>La siguiente tabla muestra todos los dominios, su índice de cumplimiento, índice de desconocimiento y su recomendación respecto a su índice.</h4>
-            <table class="table table-striped" style="margin-bottom: 50px;">
-                <thead>
-                  <tr>
-                    <th scope="col" style="text-align: center;"><h3>Dominio</h3></th>
-                    <th scope="col" style="text-align: center;"><h3>Cumplimiento</h3></th>
-                    <th scope="col" style="text-align: center;"><h3>Porcentaje de desconocimiento</h3></th>
-                    <th scope="col" style="text-align: center;"><h3>Recomendación</h3></th>
-                  </tr>
-                </thead>
-                <tbody id="table-append">
-                    <!-- JS DEL FINAL -->
-                </tbody>
-              </table>
+            </div>
+            <div class="row" style="display:none">
+                <div class="col-lg-12">
+                    <h4>La siguiente tabla muestra todos los dominios, su índice de cumplimiento, índice de desconocimiento y su recomendación respecto a su índice <strong>ordenados por % de cumplimiento de menor a mayor</strong></h4>
+                    <table class="table table-striped table-bordered" style="margin-bottom: 50px;" name="tables" id="recomtable">
+                        <thead>
+                        <tr>
+                            <th class="col-md-1" scope="col" style="text-align: center;"><h3>Dominio</h3></th>
+                            <th class="col-md-1" scope="col" style="text-align: center;"><h3>Porcentaje de cumplimiento</h3></th>
+                            <th class="col-md-1" scope="col" style="text-align: center;"><h3>Porcentaje de desconocimiento</h3></th>
+                            <th class="col-md-1" scope="col" style="text-align: center;"><h3>Grado de cumplimiento</h3></th>
+                            <th class="col-md-4" scope="col" style="text-align: center;"><h3>Recomendación</h3></th>
+                            <th class="col-md-3" scope="col" style="text-align: center;"><h3>Referencias</h3></th>
+                        </tr>
+                        </thead>
+                        <tbody id="table-append">
+                                {% if percentage_by_dom %}
+                                    {% for percentage in percentage_by_dom %}
+                                    <tr>
+                                        <th scope="row" style="text-align: center;"><b>{{percentage.id}}</b></th>
+                                        <td style="text-align: center;"><b>{{percentage.value}}%</b></td>
+                                        <td style="text-align: center;"><b>{{percentage.unknown}}%</b></td>
+                                        {% if percentage.value <= 40 %}
+                                            <td style="text-align: center;"><b>Bajo</b></td>
+                                            {% if percentage_by_dom %}
+                                            <td>
+                                                {% for x in percentage.recomendations %}
+                                                    <p>{{x|safe}}</p>
+                                                {% endfor %}  
+                                            </td>
+                                            <td>
+                                                {% for x in percentage.guide %}
+                                                    <p>{{x|safe}}</p>
+                                                {% endfor %}  
+                                            </td>
+                                            {% endif %}
+                                        {% elif percentage.value > 40 and percentage.value < 80 %}
+                                            <td style="text-align: center;"><b>Medio</b></td>
+                                            {% if percentage_by_dom %}
+                                            <td>
+                                                {% for x in percentage.recomendations %}
+                                                    <p>{{x|safe}}</p>
+                                                {% endfor %}
+                                            </td>
+                                            <td>
+                                                {% for x in percentage.guide %}
+                                                    <p>{{x|safe}}</p>
+                                                {% endfor %}  
+                                            </td>
+                                            {% endif %}
+                                            
+                                        {% elif percentage.value >= 80 and percentage.value < 100 %}
+                                            <td style="text-align: center;"><b>Alto</b></td>
+                                            {% if percentage_by_dom %}
+                                            <td>
+                                                {% for x in percentage.recomendations %}
+                                                    <p>{{x|safe}}</p>
+                                                {% endfor %}  
+                                            </td>
+                                            <td>
+                                                {% for x in percentage.guide %}
+                                                    <p>{{x|safe}}</p>
+                                                {% endfor %}  
+                                            </td>
+                                            {% endif %}
+                                        {% elif percentage.value == 100 %}
+                                            <td style="text-align: center;"><b>Perfecto</b></td>
+                                            <td><b>No existen recomendaciones debido al porcentaje de cumplimiento</b></td>
+                                            <td><b>No existe Guía de referencia debido al porcentaje de cumplimiento</b></td>
+                                        {% endif %}
+                                    </tr>
+                                    {% endfor %}
+                                {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-12">
+                    <h4>La siguiente tabla muestra todos los dominios, su índice de cumplimiento, índice de desconocimiento y su recomendación respecto a su índice <strong>ordenados por % de cumplimiento de menor a mayor</strong></h4>
+                    <table class="table table-striped table-bordered" style="margin-bottom: 50px;" name="tables" id="recomtableshow">
+                        <thead>
+                        <tr>
+                            <th class="col-md-1" scope="col" style="text-align: center;"><h3>Dominio</h3></th>
+                            <th class="col-md-1" scope="col" style="text-align: center;"><h3>Porcentaje de cumplimiento</h3></th>
+                            <th class="col-md-1" scope="col" style="text-align: center;"><h3>Porcentaje de desconocimiento</h3></th>
+                            <th class="col-md-1" scope="col" style="text-align: center;"><h3>Grado de cumplimiento</h3></th>
+                            <th class="col-md-4" scope="col" style="text-align: center;"><h3>Nombre de la recomendación</h3></th>
+                            <th class="col-md-3" scope="col" style="text-align: center;"><h3>Referencias</h3></th>
+                        </tr>
+                        </thead>
+                        <tbody id="table-append">
+                                {% if percentage_by_dom %}
+                                    {% for percentage in percentage_by_dom %}
+                                    <tr>
+                                        <th scope="row" style="text-align: center;"><b>{{percentage.id}}</b></th>
+                                        <td style="text-align: center;"><b>{{percentage.value}}%</b></td>
+                                        <td style="text-align: center;"><b>{{percentage.unknown}}%</b></td>
+                                        {% if percentage.value <= 40 %}
+                                            <td style="text-align: center;"><b>Bajo</b></td>
+                                            {% if percentage_by_dom %}
+                                            <td>
+                                                {% for x in percentage.name_recomendations %}
+                                                    <p>- {{x|safe}}</p>
+                                                {% endfor %}  
+                                            </td>
+                                            <td>
+                                                {% for x in percentage.guide %}
+                                                    <p>- {{x|safe}}</p>
+                                                {% endfor %}  
+                                            </td>
+                                            {% endif %}
+                                        {% elif percentage.value > 40 and percentage.value < 80 %}
+                                            <td style="text-align: center;"><b>Medio</b></td>
+                                            {% if percentage_by_dom %}
+                                            <td>
+                                                {% for x in percentage.name_recomendations %}
+                                                    <p>- {{x|safe}}</p>
+                                                {% endfor %}
+                                            </td>
+                                            <td>
+                                                {% for x in percentage.guide %}
+                                                    <p>- {{x|safe}}</p>
+                                                {% endfor %}  
+                                            </td>
+                                            {% endif %}
+                                            
+                                        {% elif percentage.value >= 80 and percentage.value < 100 %}
+                                            <td style="text-align: center;"><b>Alto</b></td>
+                                            {% if percentage_by_dom %}
+                                            <td>
+                                                {% for x in percentage.name_recomendations %}
+                                                    <p>- {{x|safe}}</p>
+                                                {% endfor %}  
+                                            </td>
+                                            <td>
+                                                {% for x in percentage.guide %}
+                                                    <p>- {{x|safe}}</p>
+                                                {% endfor %}  
+                                            </td>
+                                            {% endif %}
+                                        {% elif percentage.value == 100 %}
+                                            <td style="text-align: center;"><b>Perfecto</b></td>
+                                            <td><b>No existen recomendaciones debido al porcentaje de cumplimiento</b></td>
+                                            <td><b>No existe Guía de referencia debido al porcentaje de cumplimiento</b></td>
+                                        {% endif %}
+                                    </tr>
+                                    {% endfor %}
+                                {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         {% endif %}
           </div>
                 <div>
@@ -175,7 +408,6 @@
                 </div>
             </div>
         </div>
-    </div>
     <!-- Mainly scripts -->
     <script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
     <script src="{% static 'js/popper.min.js' %}"></script>
@@ -208,11 +440,103 @@
     <script src="{% static 'js/plugins/toastr/toastr.min.js' %}"></script>
     <!-- Date range picker -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.css">
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.js"></script>
+    <script src="{% static 'js/table2excel/src/jquery.table2excel.js' %}"></script>
+    <script lang="javascript" src="{% static 'js/sheetjs/dist/xlsx.full.min.js' %}"></script>
+    <script lang="javascript" src="{% static 'js/FileSaver/dist/FileSaver.js' %}"></script>
 
 
 
 <script>
     // Create the chart
+    $(document).ready( function () {
+        $('#table-users').DataTable({ 
+                    'language': {url: 'http://cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/Spanish.json'},
+                    'scrollY': 300,
+                    "sPaginationType": "full_numbers",
+                    });
+    } );
+    $(document).ready( function () {
+            $('#table-answers').DataTable({ 
+                        'language': {url: 'http://cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/Spanish.json'},
+                        'scrollY': 200,
+                        'scrollX':600,
+                        'scroller':true,
+                        });
+    } );
+
+    $(document).ready( function () {
+        $('#recomtable').DataTable({ 
+                    'language': {url: 'http://cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/Spanish.json'},
+                    "order": [[ 1, "asc" ]],
+                    "iDisplayLength": 11,
+                    "searching": false,
+                    "lengthChange": false,
+                    "bFilter": false,
+                    "bSearchable":false,
+                    "bInfo":false,
+                    "paging":   false,
+                    });
+    } );
+
+    $(document).ready( function () {
+        $('#recomtableshow').DataTable({ 
+                    'language': {url: 'http://cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/Spanish.json'},
+                    "order": [[ 1, "asc" ]],
+                    "iDisplayLength": 11,
+                    "searching": false,
+                    "lengthChange": false,
+                    "bFilter": false,
+                    "bSearchable":false,
+                    "bInfo":false,
+                    "paging":   false,
+                    });
+    } );
+
+    $(document).ready( function () {
+    $('#table-action').DataTable({ 
+                'language': {url: 'http://cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/Spanish.json'},
+                "order": [[ 2, "asc" ]],
+                "iDisplayLength": 11,
+                "searching": false,
+                "lengthChange": false,
+                "bFilter": false,
+                "bSearchable":false,
+                "bInfo":false,
+                "paging":   false,
+                });
+    } );
+    {% if encuesta_picker != 0 %}
+        var wb = XLSX.utils.book_new();
+
+        var ws1 = XLSX.utils.table_to_sheet(document.getElementById('recomtable'));
+        XLSX.utils.book_append_sheet(wb, ws1, "Resultado Dominios");
+
+        var ws2 = XLSX.utils.table_to_sheet(document.getElementById('table-answers'));
+        XLSX.utils.book_append_sheet(wb, ws2, "Respuestas");
+
+        var ws3 = XLSX.utils.table_to_sheet(document.getElementById('table-users'));
+        XLSX.utils.book_append_sheet(wb, ws3, "Respuestas totales por dominio");
+
+        var ws4 = XLSX.utils.table_to_sheet(document.getElementById('table-days'));
+        XLSX.utils.book_append_sheet(wb, ws4, "Respuestas por día");
+
+        var ws5 = XLSX.utils.table_to_sheet(document.getElementById('table-action'));
+        XLSX.utils.book_append_sheet(wb, ws5, "Plan de acción");
+
+        var wbout = XLSX.write(wb, {bookType:'xlsx', bookSST:true, type: 'binary'});
+        function s2ab(s) {
+                    var buf = new ArrayBuffer(s.length);
+                    var view = new Uint8Array(buf);
+                    for (var i=0; i<s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
+                    return buf;
+                    }
+
+        $("#download-excel").click(function(){
+            saveAs(new Blob([s2ab(wbout)],{type:"application/octet-stream"}), 'Informe del {{fechainicio}} hasta {{fechafin}}.xlsx');
+        });
+    {% endif %}
 
     var value = []; //cumplimiento dominio
     var value2 = []; //cumplimiento seccion
@@ -220,6 +544,7 @@
     var recomendations = ["Adoptar políticas de seguridad de la información estableciendo un conjunto de políticas de seguridad que se encuentren respaldadas por una planificación estratégica institucional. Los documentos de políticas de seguridad deberán ser:</br> <br> - Aprobados  por  la  dirección  de  la  institución  o  por  el  Comité  de Seguridad  de  la  misma,  y  ser  comunicada  y  difundida  al  personal  y stakeholders.</br> <br> - Revisados   regularmente, al menos cada 2 años, o cuando   se produzcan cambios significativos, debiendo realizar las modificaciones necesarias.</br>", "Designar un encargado de seguridad de la información que  lidere  los  esfuerzos  de  la  institución  en  materia  de seguridad de la información, y que reporte directamente al Jefe de Servicio o similar.</br> <br>El encargado de seguridad de la información debe tener un perfil adecuado a  sus  funciones,  además  de  las  cualidades  de  liderazgo,conocimiento técnico en materias de seguridad de la información y capacidad de gestión. </br> <br>Las funciones del encargado de seguridad de la información deberán estar claramente definidas en la resolución que lo designe.", "Se debe identificar e inventariar los activos de información de la institución mediante  un  procedimiento  documentado,  asignando  un  responsable  para cada uno de los activos mencionados.</br> <br>El inventario de activos debe ser actualizado con una frecuencia, al menos anual.</br>","Cada  colaborador  contratado  bajo  la  modalidad  de  honorarios  a  suma alzada  debe  firmar  un  contrato  que  especifique  sus  responsabilidades  en materia de seguridad de la información.</br> <br>La resolución  de  ingreso  de  funcionarios  de  planta  o  a  contrata  debe especificar  las  responsabilidades  del  funcionario  en  materia  de  seguridad de la información.</br><br>Como  parte  del  contrato  anterior,  o  en  un  documento  complementario,  el funcionario  debe  firmar  un  acuerdo  de  confidencialidad  de  la  información con la institución, en los casos que amerite.", "Se debe establecer una política de seguridad física alineada al  análisis  de  riesgos  realizado  por  la  institución. Adicionalmente,  se  deben  establecer  todos  los  procedimientos  necesarios para su implementación.</br><br>Se  debe  definir  los    perímetros  de  seguridad  física  donde  se  alojen  los activos  que  den  soporte  a  los  servicios de  la  institución  (áreas  seguras). Dichos perímetros deben tener barreras de resguardo, controles de acceso apropiados y estar físicamente protegidos del acceso no autorizado, daños e  interferencias,  así  como  proveer  instalaciones  de  apoyo  tales  como cableado y suministro eléctrico apropiados.</br><br>Se  debe  establecer  un  procedimiento  de  acceso  a  las  áreas  seguras  y designar al personal autorizado para acceder a éstas.", "Se debe establecer una política contra código malicioso, así como todos los procedimientos  necesarios  para  su  implementación,  que  establezcan  al menos, lo siguiente:</br><br>1.Características   de   la   solución   contra   código   malicioso   de   la institución  (si  es  centralizada  o  no,  si  posee  funcionalidad  de  lista blanca, gris o negra, frecuencia de actualización de las firmas, entre otros).</br><br>2.Capacitaciones   necesarias   al   personal   respecto al   uso   de   las herramientas   contra   código   malicioso   y   conductas   de   riesgo asociadas  a  código  malicioso,  como  por  ejemplo,  abrir  archivos adjuntos    de    un    correo    electrónico,    uso    de    medios    de almacenamiento extraíbles en computadores no seguros, etc.","Se  debe  contar  con  controles  de  acceso  lógico  basados,  al  menos,  en  un identificador único y su contraseña correspondiente.</br><br> En  el  caso  de  requerimientos  más estrictos,  se  debe  privilegiar  el  uso  de sistemas   con   múltiples   factores   de   autenticación,   tales   como:   firma electrónica,  segundas  claves  (OTP  o  similar),  biometría  u  otros,  como mecanismos de validación más fuertes de la identidad del usuario.</br> <br>Se debe definir una política de gestión  de  acceso lógico que establezca,  al menos, lo siguiente:</br><br>1.Métodos de autenticación autorizados por la institución.</br><br>2.Métodos    de    gestión    de    los    identificadores    y    contraseñas, incluyendo:  autorización  de  acceso,  requerimientos  mínimos  de largo  y  complejidad,  vida  útil  e  historial  de  uso  de  contraseñas  y clasificación   de   usuarios   privilegiados.   En   cualquier   caso,   las contraseñas  no  podrán  ser  de  largo  inferior  a  10  caracteres  y  no podrán estar relacionadas con datos de la persona  que hagan fácil su  deducción.  Si  los  sistemas  de  la  institución  lo  soportan,  se recomienda el uso de una passphrase en lugar de una contraseña.</br><br>3.Métodos de revisión periódica de los accesos lógicos otorgados.</br><br>4.Redes y servicios de red de la institución a los queestará permitido el acceso.</br><br>5.Lineamientos para establecer quién tiene permitido el acceso a las distintas redes y servicios de la institución.</br><br>Esta política debe estar basada en los principios de compartimentalización, necesidad de saber y de menor privilegio.</br><br>De   forma   adicional,   se   deben   establecer   políticas   de   acceso   lógico alineadas  con  este  control  para  todos  los  sistemas  de  información,  ya  sea en esta misma política o en documentos independientes.", "Los  requisitos  de  seguridad  de  la  información  deben  ser  definidos  e incluidos  en  los  procesos,  proyectos  de  adquisición,  desarrollo  de  nuevos sistemas o mejora de sistemas existentes.</br><br>Se deben establecer criterios de aceptación de los sistemas que incluyan el cumplimiento de los requisitos de seguridad de la información establecidos.", "Se debe establecer una política de gestión de incidentes de seguridad de la información que establezca, al menos, lo siguiente:</br><br>1.Los roles y responsabilidades asociados  a la gestión  de incidentes.</br><br>2.Deber  de informar los incidentes a la autoridad correspondiente o grupos de interés, alineado a lo establecido en el control OR.04.</br><br>Se  debe establecer  un  procedimiento  de  respuesta  ante  incidentes  de seguridad que establezca, al menos, lo siguiente:</br><br>1.Mecanismos de detección de incidentes de seguridad.</br><br>2.Mecanismos   para   el   registro,   reporte   y   clasificación   de   los incidentes de seguridad.</br><br>3.Evaluación de los incidentes de seguridad y respuesta a ellos.</br><br>4.Seguimiento de los incidentes y mejora continua","Se  debe  establecer  un  plan  de  continuidad  del  negocio  que  aborde,  al menos, lo siguiente:</br><br>1.Definición  de  roles  y  responsabilidades  durante  y  después  de contingencia.</br><br>2.Proceso para  declarar la contingencia y convocar  a los equipos de respuesta.</br><br>3.Detalles   para   gestionar   las   consecuencias   de   un   evento   de contingencia en, al menos, los siguientes aspectos:</br><br>a.Seguridad de las personas.</br><br>b.Opciones  y  mecanismos  de  respuesta  a  la  contingencia, incluyendo las definiciones de seguridad de la información durante los eventos de contingencia.</br><br>c.Mitigación  y  prevención  de  futuros  daños  producto  del incidente en curso.</br><br>4.Detalles    respecto    a    la    comunicación    con    colaboradores, funcionarios  y  sus  familiares,  stakeholders  y  autoridades  (policía, bomberos, autoridades directivas, etc.)</br><br>5.Detalles  respecto  a  la  continuidad  de  las  operaciones  críticas durante la contingencia.</br><br>6.Detalles  respecto  a  la  efectiva  gestión  de  las  relacionespúblicas durante la contingencia.</br><br>7.Proceso  para  la  vuelta  a  la  normalidad,  una  vez  terminada  la contingencia.", "Se  debe  identificar  y   documentar  todos  los  requerimientos  legales  y contractuales relacionados con la seguridad de la información que apliquen a la institución.</br><br>Se  debe  establecer  un  procedimiento  para  asegurar  el  cumplimiento  de dichos requisitos."];
     // var recomendationsmedium = ["Si bien, la empresa cumple los estándares medios para este dominio, se recomienda realizar revisiones periódicas de la polItica de seguridad establecida en la empresa y establecer compromisos de la gerencia a la administración de seguridad informática", "Si bien, la empresa cumple los estándares medios para este dominio, se recomienda demostrar apoyo activo de la gerencia de la empresa a las medidas de seguridad de la empresa y los representates de la organización en ámbitos de seguridad de la información deben tener responsabilidad bien definidas y proteger las informaciones de carácter confidencial", "Si bien, la empresa cumple con los estándares medios para este dominio, se recomienda identificar y clasificar los activos, de modo que un inventario pueda ser estructurado y posteriormente mantenido. Además, deben seguir reglas documentadas, que definen que tipo de uso se permite con dichos activos", "Se recomienda que los empleados de la organización reciban entrenamiento adecuado de seguridad correspondiente a sus funciones", "Si bien, la empresa cumple los estándares medios para este dominio, se recomienda realizar revisiones periódicas a los sistemas de información sensible para asegurar el cumplimiento de seguridad de este", "Si bien, la empresa cumple los estándares medios para este dominio, se recomienda efectuar auditorias sobre los servicios de terceros, reportes y registros en forma reiterada", "Si bien, la empresa cumple los estándares medios para este dominio, se recomienda garantizar el acceso de cada usuario autorizado y prevenir el acceso no autorizados a los sistema de información de manera que evite daños a documentos y recursos de procesamiento de la información que estén fuera de alcance de cualquiera", "Si bien, la empresa cumple los estándares medios para este dominio, se recomienda realizar seguimiento a la confidencialidad y autenticidad de los requisitos de seguiridad de los sistemas de información", "Si bien, la empresa cumple los estándares medios para este dominio, se recomienda realizar seguimiento a los SLA de los incidentes de seguridad informática para comprobar si se están respetando los tiempos definidos", "Si bien, la empresa cumple los estándares medios para este dominio, se recomienza realizar seguimiento y control a los planes de continuidad de negocios para asegurarse del cumplimiento de estos", "Si bien, la empresa cumple los estándares medios para este dominio, se recomienda realizar una revisión para evitar la violación de cualquier ley criminal o civil, garantizando estatutos, regulación u obligaciones contractuales y de cualesquiera requisitos de seguridad de la información"];
     // var recomendationshigh = ["Dado el Indice alto de este dominio, sólo se recomiendan revisiones periódicas de las políticas de seguridad de la empresa", "Dado el índice alto de este dominio, solo se recomiendan la revisión periódica del cumplimiento de las actividades y responsabilidades de la empresa en el ámbito de seguridad informática", "Dado el Indice alto de este dominio, solo se recomienda realizar revisiones de los activos de la empresa de modo que no existan errores en el inventario de ellos", "Dado el Indice alto de este dominio, solo se recomienda la revisión periodica de seguridad de acuerdo con políticas y procedimiento establecidos por la organización", "Dado el índice alto de este dominio, solo se recomienda la revisión periódica de cumplimiento de este dominio", "Dado el índice alto de este dominio, solo se recomienda la revisión periódica de cumplimiento de este dominio", "Dado el índice alto de este dominio, solo se recomienda la revisión periódica de cumplimiento de este dominio", "Dado el índice alto de este dominio, solo se recomienda la revisión periódica de cumplimiento de este dominio", "Dado el índice alto de este dominio, solo se recomienda la revisión periódica de cumplimiento de este dominio", "Dado el índice alto de este dominio, solo se recomienda la revisión periódica de cumplimiento de este dominio", "Dado el índice alto de este dominio, solo se recomienda la revisión periódica de cumplimiento de este dominio"];
+    var guide = ["- Resolución  Exenta  o  similar,  con  la  aprobación  de  la  Política  General de Seguridad.</br><br>- Políticas    relevantes    por dominio,    si    las    hubiera,    debidamente formalizadas. </br><br>- Evidencia de difusión y revisión  de las políticas", "- Resolución  Exenta  o  similar  con  el  nombramiento  del  Encargado  de Seguridad.</br><br>- Difusión de la designación del Encargado.</br><br>- Antecedentes  que  permitan  validar  que  la  persona  designada  cumple con  los  requisitos  mínimos  para  este  rol,  tales  como  certificados  de estudios, certificaciones técnicas u otros.", "- Procedimiento  o  metodología  para  la  generación  y  actualización  del inventario de activos.</br><br>- Inventario de activos actualizado de la institución.</br><br>- Responsable de cada activo identificado en el inventario de activos.", "- Listado del personal contratado en el período.</br><br>- Contratos  firmados  que  pertenezcan  al  período,  con  las  cláusulas  de confidencialidad y seguridad de la información correspondientes.</br><br>- Acuerdos de confidencialidad firmados que pertenezcan al período, si corresponde.", "- Política de seguridad física.</br><br>- Procedimientos  necesarios  parala  implementación  de  las  políticas  de seguridad física.</br><br>- Listado  de  áreas  seguras  de  la  institución  y  personal  autorizado  para acceder a ellas.</br><br>- Registros de acceso a las áreas seguras", "- Política y procedimiento contra código malicioso.</br><br>- Evidencia  de  capacitaciones  al  personal  respecto  a  conductas  de riesgo asociadas a código malicioso.", "- Procedimientos para la gestión de los medios de almacenamiento.</br><br>- Evidencia   de   medidas   de   seguridad   aplicadas   a   los   medios   de almacenamiento (encriptación, restricciones de conexión, etc).</br><br>- Evidencia de solicitud, entrega, devolución y eliminación de medios en el período.</br><br>- Política de gestión de acceso lógico,  usuarios y contraseñas.○Políticas complementarias.</br><br>- Evidencia de difusión de las políticas.", "- Evidencia   de   incorporación   de   requisitos   de   seguridad de   la información  en  los  proyectos  de  adquisición,  desarrollo  o  mejora  de sistemas.</br><br>- Evidencia  de  pruebas  de  aceptación  de  sistemas  que  incorporen  los requisitos de seguridad de la información.", "- Política de gestión de incidentes de seguridad de la información.</br><br>- Responsables de la gestión de incidentes formalmente definidos.</br><br>- Listado de incidentes del período.", "-  Plan   de   continuidad   del   negocio,   que   incorpore   un   plan   de contingencia y recuperación.</br><br>- Plan de pruebas del plan de continuidad del negocio.</br><br>- Resultados de las pruebas al plan de continuidad de negocio.", "- Resolución Exenta o similar con la aprobación de laPolítica General de Seguridad,  con  un  apartado  referido  a  la  obligación  del  cumplimiento legal y normativo.</br><br>- Planilla o documento similar, donde se identifique: los requerimientos legales  y  contractuales  de  la  institución,  estado  de  su  cumplimiento  y plan de acción para requerimientos no cumplidos."]
     var encuesta_select = [];
     var encuesta_id = [];
     {% if encuesta_selector %}
@@ -266,7 +591,7 @@
                 type: 'column'
             },
             title: {
-                text: 'Resultados encuesta GAP para {{empresa}} desde el {{fechainicio}} hasta el {{fechafin}}'
+                text: 'Resultados encuesta GAP de {{encuestados}} personas para {{empresa}} desde el {{fechainicio}} hasta el {{fechafin}}'
             },
             subtitle: {
                 text: '<span style="color: red">Click en las columnas para ver en detalle</span>'
@@ -347,55 +672,64 @@
             }
         });
     }
-
-    for (i=0;i<value.length;i++)
-    {
-        if(value[i]<45)
+    {/* $( document ).ready(function() {
+        for (i=0;i<value.length;i++)
         {
-            $('#table-append').append(`
-                                    <tr>
-                                        <th scope="row" style="text-align: center;"><b>${i+1}</b></th>
-                                        <td style="text-align: center;"><b>Bajo</b></td>
-                                        <td style="text-align: center;"><b>${value3[i]}%</b></td>
-                                        <td><b>${recomendations[i]}</b></td>
-                                    </tr>
+            if(value[i]<45)
+            {
+                $('#table-append').append(`
+                                        <tr>
+                                            <th scope="row" style="text-align: center;"><b>${i+1}</b></th>
+                                            <td style="text-align: center;"><b>Bajo</b></td>
+                                            <td style="text-align: center;"><b>${value[i]}%</b></td>
+                                            <td style="text-align: center;"><b>${value3[i]}%</b></td>
+                                            <td><b>${recomendations[i]}</b></td>
+                                            <td><b>${guide[i]}</b></td>
+                                        </tr>
+                                    `);
+            }
+            else if(value[i]>=45 && value[i]<=70)
+            {
+                $('#table-append').append(`
+                                        <tr>
+                                            <th scope="row" style="text-align: center;"><b>${i+1}</b></th>
+                                            <td style="text-align: center;"><b>Medio</b></td>
+                                            <td style="text-align: center;"><b>${value[i]}%</b></td>
+                                            <td style="text-align: center;"><b>${value3[i]}%</b></td>
+                                            <td><b>${recomendations[i]}</b></td>
+                                            <td><b>${guide[i]}</b></td>
+                                        </tr>
                                 `);
-        }
-        else if(value[i]>=45 && value[i]<=70)
-        {
-            $('#table-append').append(`
-                                    <tr>
-                                        <th scope="row" style="text-align: center;"><b>${i+1}</b></th>
-                                        <td style="text-align: center;"><b>Medio</b></td>
-                                        <td style="text-align: center;"><b>${value3[i]}%</b></td>
-                                        <td><b>${recomendations[i]}</b></td>
-                                    </tr>
-                            `);
-        }
-        else if (value[i]>71 && value[i]<100)
-        {
-            $('#table-append').append(`
-                                    <tr>
-                                        <th scope="row" style="text-align: center;"><b>${i+1}</b></th>
-                                        <td style="text-align: center;"><b>Alto</b></td>
-                                        <td style="text-align: center;"><b>${value3[i]}%</b></td>
-                                        <td><b>${recomendations[i]}</b></td>
-                                    </tr>
-                            `);
-        }
-        else if (value[i]==100)
-        {
-            $('#table-append').append(`
-                                    <tr>
-                                        <th scope="row" style="text-align: center;"><b>${i+1}</b></th>
-                                        <td style="text-align: center;"><b>Perfecto</b></td>
-                                        <td style="text-align: center;"><b>${value3[i]}%</b></td>
-                                        <td><b>El porcentaje del dominio es 100%, se cumplen todas las políticas y protocolos estipulados.</b></td>
-                                    </tr>
-                            `);
-        }
+            }
+            else if (value[i]>71 && value[i]<100)
+            {
+                $('#table-append').append(`
+                                        <tr>
+                                            <th scope="row" style="text-align: center;"><b>${i+1}</b></th>
+                                            <td style="text-align: center;"><b>Alto</b></td>
+                                            <td style="text-align: center;"><b>${value[i]}%</b></td>
+                                            <td style="text-align: center;"><b>${value3[i]}%</b></td>
+                                            <td><b>${recomendations[i]}</b></td>
+                                            <td><b>${guide[i]}</b></td>
+                                        </tr>
+                                `);
+            }
+            else if (value[i]==100)
+            {
+                $('#table-append').append(`
+                                        <tr>
+                                            <th scope="row" style="text-align: center;"><b>${i+1}</b></th>
+                                            <td style="text-align: center;"><b>Perfecto</b></td>
+                                            <td style="text-align: center;"><b>${value[i]}%</b></td>
+                                            <td style="text-align: center;"><b>${value3[i]}%</b></td>
+                                            <td><b>El porcentaje del dominio es 100%, se cumplen todas las políticas y protocolos estipulados.</b></td>
+                                            <td><b>${guide[i]}</b></td>
+                                        </tr>
+                                `);
+            }
 
-    }
+        }
+    }); */}
 
     function setFilterSelectors(params){
             let queryString = location.search;

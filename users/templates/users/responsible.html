@@ -1,0 +1,541 @@
+<!--{% load staticfiles %}-->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-U A-Compatible" content="IE=edge">
+    <title>GAP ANALYSIS | Dashboard</title>
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/font-awesome.css' %}" rel="stylesheet">
+    <link href="{% static 'css/checkboxes.css' %}" rel="stylesheet">
+    <!-- Toastr style -->
+    <link href="{% static 'css/plugins/toastr/toastr.min.css' %}" rel="stylesheet">
+    <!-- Gritter -->
+    <link href="{% static 'css/plugins/gritter/jquery.gritter.css' %}" rel="stylesheet">
+    <link href="{% static 'css/animate.css' %}" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <link href="{% static 'css/scroll.css' %}" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.4/jspdf.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/json2/20160511/json2.js"></script>
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
+
+</head>
+<body>
+
+<div id="wrapper">
+    <nav class="navbar-default navbar-static-side" role="navigation">
+        <div class="sidebar-collapse">
+            <ul class="nav metismenu" id="side-menu">
+                <li class="nav-header">
+                    <div class="dropdown profile-element">
+                        <img alt="image" class="rounded-circle" src="{% static 'img/profile_small.jpg' %}"/>
+                        <a data-toggle="dropdown" class="dropdown-toggle" href="#">
+                            <span class="block m-t-xs font-bold">{{request.user.username}}</span>
+                            <span class="text-muted text-xs block">Opciones <b class="caret"></b></span>
+                        </a>
+                        <ul class="dropdown-menu animated fadeInRight m-t-xs">
+                            <li class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/logout">Cerrar sesión</a></li>
+                        </ul>
+                    </div>
+                    <div class="logo-element">
+                        GAP
+                    </div>
+                </li>
+                <li class="active">
+                    <a href="index.html"><i class="fa fa-th-large"></i> <span class="nav-label">Módulos</span> <span class="fa arrow"></span></a>
+                    <ul class="nav nav-second-level">
+                        <li class="active"><a href="{% url 'dashboard' %}">Responder Encuesta</a></li>
+                        {% if admin == 1 %}
+                            <li class="active"><a href="{% url 'graphs' %}">Resultados</a></li>
+                            <li class="active"><a href="{% url 'asign' %}">Asignar Encuesta</a></li>
+                            <li class="active"><a href="{% url 'history' %}">Historial de encuestas</a></li>
+                            <li class="active"><a href="{% url 'carga' %}">Carga de usuarios</a></li>
+                            <li class="active"><a href="{% url 'responsible' %}">Responsables por dominio</a></li>
+                        {% endif %}
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div id="page-wrapper" class="gray-bg dashbard-1">
+        <div class="row  border-bottom white-bg dashboard-header">
+            <div class="navbar-header">
+                <a class="navbar-minimalize minimalize-styl-2 btn btn-primary " href="#"><i class="fa fa-bars"></i> </a>
+                <form role="search" class="navbar-form-custom" action="search_results.html">
+                    <div class="form-group">
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="wrapper wrapper-content">
+            <h2 class="d-flex justify-content-center" style="margin-bottom:40px">Asigne los encargados por dominio</h2>
+            <div class="row d-flex justify-content-center" style="margin-bottom:20px">
+                <div class="col-lg-3">
+                    <h3>Dominio</h3>
+                </div>
+                <div class="col-lg-4">
+                    <h3>Responsable</h3>
+                </div>
+            </div>
+            <div class="row d-flex justify-content-center">
+                <div class="col-lg-3">
+                    <h3>Dominio 1: Política Seguridad</h3>
+                </div>
+                <div  class="col-lg-4">
+                    <select id="dom1" name="activity" class="form-control m-b">
+                        {% if dom1  %}
+                        {% for dom in dom1  %}
+                            <option value ={{dom.pk}}-1>{{dom.encargado.usuario.primer_nombre}} {{dom.encargado.usuario.apellido_paterno}} {{dom.encargado.usuario.apellido_materno}}</option>
+                        {% endfor %}
+                        {% else %}
+                        <option value ="0">Seleccione Responsable</option>
+                        {% endif %}
+                        {% if workers %}
+                            {% for worker in workers %}
+                                <option value ={{worker.pk}}-1>{{worker.usuario.primer_nombre}} {{worker.usuario.apellido_paterno}} {{worker.usuario.apellido_materno}}</option>
+                            {% endfor %}
+                        {% endif %}
+                    </select>
+                </div>
+            </div>    
+            <div class="row d-flex justify-content-center">            
+                <div class="col-lg-3">
+                    <h3>Dominio 2: Organización de la Seguridad Informática</h3>
+                </div>
+                <div  class="col-lg-4">
+                    <select id="dom2" name="activity" class="form-control m-b">
+                        {% if dom2  %}
+                        {% for dom in dom2  %}
+                            <option value ={{dom.pk}}-2>{{dom.encargado.usuario.primer_nombre}} {{dom.encargado.usuario.apellido_paterno}} {{dom.encargado.usuario.apellido_materno}}</option>
+                        {% endfor %}
+                        {% else %}
+                        <option value ="0">Seleccione Responsable</option>
+                        {% endif %}
+                        {% if workers %}
+                            {% for worker in workers %}
+                                <option value ={{worker.pk}}-2>{{worker.usuario.primer_nombre}} {{worker.usuario.apellido_paterno}} {{worker.usuario.apellido_materno}}</option>
+                            {% endfor %}
+                        {% endif %}
+                    </select>
+                </div>
+            </div>    
+            <div class="row d-flex justify-content-center">
+                <div class="col-lg-3">
+                    <h3>Dominio 3: Administración Activos</h3>
+                </div>
+                <div  class="col-lg-4">
+                    <select id="dom3" name="activity" class="form-control m-b">
+                        {% if dom3  %}
+                        {% for dom in dom3  %}
+                            <option value ={{dom.pk}}-3>{{dom.encargado.usuario.primer_nombre}} {{dom.encargado.usuario.apellido_paterno}} {{dom.encargado.usuario.apellido_materno}}</option>
+                        {% endfor %}
+                        {% else %}
+                        <option value ="0">Seleccione Responsable</option>
+                        {% endif %}
+                        {% if workers %}
+                            {% for worker in workers %}
+                                <option value ={{worker.pk}}-3>{{worker.usuario.primer_nombre}} {{worker.usuario.apellido_paterno}} {{worker.usuario.apellido_materno}}</option>
+                            {% endfor %}
+                        {% endif %}
+                    </select>
+                </div>
+            </div>    
+            <div class="row d-flex justify-content-center">
+                <div class="col-lg-3">
+                    <h3>Dominio 4: Seguridad Recursos Humanos</h3>
+                </div>
+                <div  class="col-lg-4">
+                    <select id="dom4" name="activity" class="form-control m-b">
+                        {% if dom4  %}
+                        {% for dom in dom4  %}
+                            <option value ={{dom.pk}}-4>{{dom.encargado.usuario.primer_nombre}} {{dom.encargado.usuario.apellido_paterno}} {{dom.encargado.usuario.apellido_materno}}</option>
+                        {% endfor %}
+                        {% else %}
+                        <option value ="0">Seleccione Responsable</option>
+                        {% endif %}
+                        {% if workers %}
+                            {% for worker in workers %}
+                                <option value ={{worker.pk}}-4>{{worker.usuario.primer_nombre}} {{worker.usuario.apellido_paterno}} {{worker.usuario.apellido_materno}}</option>
+                            {% endfor %}
+                        {% endif %}
+                    </select>
+                </div>
+            </div>    
+            <div class="row d-flex justify-content-center">
+                <div class="col-lg-3">
+                    <h3>Dominio 5: Seguridad Física y Ambiental</h3>
+                </div>
+                <div  class="col-lg-4">
+                    <select id="dom5" name="activity" class="form-control m-b">
+                        {% if dom5  %}
+                        {% for dom in dom5  %}
+                            <option value ={{dom.pk}}-5>{{dom.encargado.usuario.primer_nombre}} {{dom.encargado.usuario.apellido_paterno}} {{dom.encargado.usuario.apellido_materno}}</option>
+                        {% endfor %}
+                        {% else %}
+                        <option value ="0">Seleccione Responsable</option>
+                        {% endif %}
+                        {% if workers %}
+                            {% for worker in workers %}
+                                <option value ={{worker.pk}}-5>{{worker.usuario.primer_nombre}} {{worker.usuario.apellido_paterno}} {{worker.usuario.apellido_materno}}</option>
+                            {% endfor %}
+                        {% endif %}
+                    </select>
+                </div>
+            </div>    
+            <div class="row d-flex justify-content-center">
+                <div class="col-lg-3">
+                    <h3>Dominio 6: Administración Comunicaciones y Operaciones</h3>
+                </div>
+                <div  class="col-lg-4">
+                    <select id="dom6" name="activity" class="form-control m-b">
+                        {% if dom6  %}
+                        {% for dom in dom6  %}
+                            <option value ={{dom.pk}}-6>{{dom.encargado.usuario.primer_nombre}} {{dom.encargado.usuario.apellido_paterno}} {{dom.encargado.usuario.apellido_materno}}</option>
+                        {% endfor %}
+                        {% else %}
+                        <option value ="0">Seleccione Responsable</option>
+                        {% endif %}
+                        {% if workers %}
+                            {% for worker in workers %}
+                                <option value ={{worker.pk}}-6>{{worker.usuario.primer_nombre}} {{worker.usuario.apellido_paterno}} {{worker.usuario.apellido_materno}}</option>
+                            {% endfor %}
+                        {% endif %}
+                    </select>
+                </div>
+            </div>    
+            <div class="row d-flex justify-content-center">
+                <div class="col-lg-3">
+                    <h3>Dominio 7: Control de Accesos</h3>
+                </div>
+                <div  class="col-lg-4">
+                    <select id="dom7" name="activity" class="form-control m-b">
+                        {% if dom7  %}
+                        {% for dom in dom7  %}
+                            <option value ={{dom.pk}}-7>{{dom.encargado.usuario.primer_nombre}} {{dom.encargado.usuario.apellido_paterno}} {{dom.encargado.usuario.apellido_materno}}</option>
+                        {% endfor %}
+                        {% else %}
+                        <option value ="0">Seleccione Responsable</option>
+                        {% endif %}
+                        {% if workers %}
+                            {% for worker in workers %}
+                                <option value ={{worker.pk}}-7>{{worker.usuario.primer_nombre}} {{worker.usuario.apellido_paterno}} {{worker.usuario.apellido_materno}}</option>
+                            {% endfor %}
+                        {% endif %}
+                    </select>
+                </div>
+            </div>    
+            <div class="row d-flex justify-content-center">
+                <div class="col-lg-3">
+                    <h3>Dominio 8: Adquisición, desarrollo y mantenimiento de Sistemas Informáticos</h3>
+                </div>
+                <div  class="col-lg-4">
+                    <select id="dom8" name="activity" class="form-control m-b">
+                        {% if dom8  %}
+                        {% for dom in dom8  %}
+                            <option value ={{dom.pk}}-8>{{dom.encargado.usuario.primer_nombre}} {{dom.encargado.usuario.apellido_paterno}} {{dom.encargado.usuario.apellido_materno}}</option>
+                        {% endfor %}
+                        {% else %}
+                        <option value ="0">Seleccione Responsable</option>
+                        {% endif %}
+                        {% if workers %}
+                            {% for worker in workers %}
+                                <option value ={{worker.pk}}-8>{{worker.usuario.primer_nombre}} {{worker.usuario.apellido_paterno}} {{worker.usuario.apellido_materno}}</option>
+                            {% endfor %}
+                        {% endif %}
+                    </select>
+                </div>
+            </div>    
+            <div class="row d-flex justify-content-center">
+                <div class="col-lg-3">
+                    <h3>Dominio 9: Administración de Incidentes de Seguridad Informática</h3>
+                </div>
+                <div  class="col-lg-4">
+                    <select id="dom9" name="activity" class="form-control m-b">
+                        {% if dom9  %}
+                        {% for dom in dom9  %}
+                            <option value ={{dom.pk}}-9>{{dom.encargado.usuario.primer_nombre}} {{dom.encargado.usuario.apellido_paterno}} {{dom.encargado.usuario.apellido_materno}}</option>
+                        {% endfor %}
+                        {% else %}
+                        <option value ="0">Seleccione Responsable</option>
+                        {% endif %}
+                        {% if workers %}
+                            {% for worker in workers %}
+                                <option value ={{worker.pk}}-9>{{worker.usuario.primer_nombre}} {{worker.usuario.apellido_paterno}} {{worker.usuario.apellido_materno}}</option>
+                            {% endfor %}
+                        {% endif %}
+                    </select>
+                </div>
+            </div>    
+            <div class="row d-flex justify-content-center">
+                <div class="col-lg-3">
+                    <h3>Dominio 10: Administración Continuidad de Negocios</h3>
+                </div>
+                <div  class="col-lg-4">
+                    <select id="dom10" name="activity" class="form-control m-b">
+                        {% if dom10  %}
+                        {% for dom in dom10  %}
+                            <option value ={{dom.pk}}-10>{{dom.encargado.usuario.primer_nombre}} {{dom.encargado.usuario.apellido_paterno}} {{dom.encargado.usuario.apellido_materno}}</option>
+                        {% endfor %}
+                        {% else %}
+                        <option value ="0">Seleccione Responsable</option>
+                        {% endif %}
+                        {% if workers %}
+                            {% for worker in workers %}
+                                <option value ={{worker.pk}}-10>{{worker.usuario.primer_nombre}} {{worker.usuario.apellido_paterno}} {{worker.usuario.apellido_materno}}</option>
+                            {% endfor %}
+                        {% endif %}
+                    </select>
+                </div>
+            </div>    
+            <div class="row d-flex justify-content-center">
+                <div class="col-lg-3">
+                    <h3>Dominio 11: Cumplimiento</h3>
+                </div>
+                <div  class="col-lg-4">
+                    <select id="dom11" name="activity" class="form-control m-b">
+                        {% if dom11  %}
+                        {% for dom in dom11  %}
+                            <option value ={{dom.pk}}-11>{{dom.encargado.usuario.primer_nombre}} {{dom.encargado.usuario.apellido_paterno}} {{dom.encargado.usuario.apellido_materno}}</option>
+                        {% endfor %}
+                        {% else %}
+                        <option value ="0">Seleccione Responsable</option>
+                        {% endif %}
+                        {% if workers %}
+                            {% for worker in workers %}
+                                <option value ={{worker.pk}}-11>{{worker.usuario.primer_nombre}} {{worker.usuario.apellido_paterno}} {{worker.usuario.apellido_materno}}</option>
+                            {% endfor %}
+                        {% endif %}
+                    </select>
+                </div>
+            </div>
+            <script>
+                $('#dom1').change(function(){
+                    select = ($(this).val());
+                    $.ajax({
+                    type: "POST",
+                    url: '{{ 'ajax-responsible/'}}',  
+                    data: {
+                        csrfmiddlewaretoken: '{{ csrf_token }}',
+                        text: select},   
+                    success:  function(response){
+                        alert(response);
+
+                        window.location.href = '{% url 'responsible' %}';
+                        }
+                    });
+                })
+
+                $('#dom2').change(function(){
+                    select = ($(this).val());
+                    $.ajax({
+                    type: "POST",
+                    url: '{{ 'ajax-responsible/'}}',  
+                    data: {
+                        csrfmiddlewaretoken: '{{ csrf_token }}',
+                        text: select},   
+                    success:  function(response){
+                        alert(response);
+
+                        window.location.href = '{% url 'responsible' %}';
+                        }
+                    });
+                })
+
+                $('#dom3').change(function(){
+                    select = ($(this).val());
+                    $.ajax({
+                    type: "POST",
+                    url: '{{ 'ajax-responsible/'}}',  
+                    data: {
+                        csrfmiddlewaretoken: '{{ csrf_token }}',
+                        text: select},   
+                    success:  function(response){
+                        alert(response);
+
+                        window.location.href = '{% url 'responsible' %}';
+                        }
+                    });
+                })
+
+                $('#dom4').change(function(){
+                    select = ($(this).val());
+                    $.ajax({
+                    type: "POST",
+                    url: '{{ 'ajax-responsible/'}}',  
+                    data: {
+                        csrfmiddlewaretoken: '{{ csrf_token }}',
+                        text: select},   
+                    success:  function(response){
+                        alert(response);
+
+                        window.location.href = '{% url 'responsible' %}';
+                        }
+                    });
+                })
+
+                $('#dom5').change(function(){
+                    select = ($(this).val());
+                    $.ajax({
+                    type: "POST",
+                    url: '{{ 'ajax-responsible/'}}',  
+                    data: {
+                        csrfmiddlewaretoken: '{{ csrf_token }}',
+                        text: select},   
+                    success:  function(response){
+                        alert(response);
+
+                        window.location.href = '{% url 'responsible' %}';
+                        }
+                    });
+                })
+
+                $('#dom6').change(function(){
+                    select = ($(this).val());
+                    $.ajax({
+                    type: "POST",
+                    url: '{{ 'ajax-responsible/'}}',  
+                    data: {
+                        csrfmiddlewaretoken: '{{ csrf_token }}',
+                        text: select},   
+                    success:  function(response){
+                        alert(response);
+
+                        window.location.href = '{% url 'responsible' %}';
+                        }
+                    });
+                })
+
+                $('#dom7').change(function(){
+                    select = ($(this).val());
+                    $.ajax({
+                    type: "POST",
+                    url: '{{ 'ajax-responsible/'}}',  
+                    data: {
+                        csrfmiddlewaretoken: '{{ csrf_token }}',
+                        text: select},   
+                    success:  function(response){
+                        alert(response);
+
+                        window.location.href = '{% url 'responsible' %}';
+                        }
+                    });
+                })
+                $('#dom8').change(function(){
+                    select = ($(this).val());
+                    $.ajax({
+                    type: "POST",
+                    url: '{{ 'ajax-responsible/'}}',  
+                    data: {
+                        csrfmiddlewaretoken: '{{ csrf_token }}',
+                        text: select},   
+                    success:  function(response){
+                        alert(response);
+
+                        window.location.href = '{% url 'responsible' %}';
+                        }
+                    });
+                })
+                $('#dom9').change(function(){
+                    select = ($(this).val());
+                    $.ajax({
+                    type: "POST",
+                    url: '{{ 'ajax-responsible/'}}',  
+                    data: {
+                        csrfmiddlewaretoken: '{{ csrf_token }}',
+                        text: select},   
+                    success:  function(response){
+                        alert(response);
+
+                        window.location.href = '{% url 'responsible' %}';
+                        }
+                    });
+                })
+                $('#dom10').change(function(){
+                    select = ($(this).val());
+                    $.ajax({
+                    type: "POST",
+                    url: '{{ 'ajax-responsible/'}}',  
+                    data: {
+                        csrfmiddlewaretoken: '{{ csrf_token }}',
+                        text: select},   
+                    success:  function(response){
+                        alert(response);
+
+                        window.location.href = '{% url 'responsible' %}';
+                        }
+                    });
+                })
+
+                $('#dom11').change(function(){
+                    select = ($(this).val());
+                    $.ajax({
+                    type: "POST",
+                    url: '{{ 'ajax-responsible/'}}',  
+                    data: {
+                        csrfmiddlewaretoken: '{{ csrf_token }}',
+                        text: select},   
+                    success:  function(response){
+                        alert(response);
+
+                        window.location.href = '{% url 'responsible' %}';
+                        }
+                    });
+                })
+            </script>      
+        <div>
+            <strong>Copyright</strong>  &copy; 2020
+        </div>
+    </div>
+</div>
+    <!-- Mainly scripts -->
+    <script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+    <script src="{% static 'js/popper.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap.js' %}"></script>
+    <script src="{% static 'js/plugins/metisMenu/jquery.metisMenu.js' %}"></script>
+    <script src="{% static 'js/plugins/slimscroll/jquery.slimscroll.min.js' %}"></script>
+    <!-- Flot -->
+    <script src="{% static 'js/plugins/flot/jquery.flot.js' %}"></script>
+    <script src="{% static 'js/plugins/flot/jquery.flot.tooltip.min.js' %}"></script>
+    <script src="{% static 'js/plugins/flot/jquery.flot.spline.js' %}"></script>
+    <script src="{% static 'js/plugins/flot/jquery.flot.resize.js' %}"></script>
+    <script src="{% static 'js/plugins/flot/jquery.flot.pie.js' %}"></script>
+    <!-- Peity -->
+    <script src="{% static 'js/plugins/peity/jquery.peity.min.js' %}"></script>
+    <script src="{% static 'js/demo/peity-demo.js' %}"></script>
+    <!-- Custom and plugin javascript -->
+    <script src="{% static 'js/inspinia.js' %}"></script>
+    <script src="{% static 'js/plugins/pace/pace.min.js' %}"></script>
+    <!-- jQuery UI -->
+    <script src="{% static 'js/plugins/jquery-ui/jquery-ui.min.js' %}"></script>
+    <!-- GITTER -->
+    <script src="{% static 'js/plugins/gritter/jquery.gritter.min.js' %}"></script>
+    <!-- Sparkline -->
+    <script src="{% static 'js/plugins/sparkline/jquery.sparkline.min.js' %}"></script>
+    <!-- Sparkline demo data  -->
+    <script src="{% static 'js/demo/sparkline-demo.js' %}"></script>
+    <!-- ChartJS-->
+    <script src="{% static 'js/plugins/chartJs/Chart.min.js' %}"></script>
+    <!-- Toastr -->
+    <script src="{% static 'js/plugins/toastr/toastr.min.js' %}"></script>
+    <!-- Date range picker -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.css">
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.js"></script>
+
+    <script>
+        function calculateBarWidth(datasetCount){
+            if(options.isFixedWidth){
+                return options.barWidth;
+            }else{
+                var baseWidth = this.calculateBaseWidth() - ((datasetCount - 1) * options.barDatasetSpacing);
+                return (baseWidth / datasetCount);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -25,14 +25,14 @@
 </head>
 <body>
 <style>
-    .my-custom-scrollbar {
+    {% comment %} .my-custom-scrollbar {
 position: relative;
-height: 200px;
+height: 400px;
 overflow: auto;
 }
 .table-wrapper-scroll-y {
 display: block;
-}
+} {% endcomment %}
 </style>
 <div id="wrapper">
     <nav class="navbar-default navbar-static-side" role="navigation">
@@ -62,6 +62,8 @@ display: block;
                             <li class="active"><a href="{% url 'graphs' %}">Resultados</a></li>
                             <li class="active"><a href="{% url 'asign' %}">Asignar Encuesta</a></li>
                             <li class="active"><a href="{% url 'history' %}">Historial de encuestas</a></li>
+                            <li class="active"><a href="{% url 'carga' %}">Carga de usuarios</a></li>
+                            <li class="active"><a href="{% url 'responsible' %}">Responsables por dominio</a></li>
                         {% endif %}
                         </ul>
                 </li>
@@ -104,7 +106,7 @@ display: block;
                 <h3>Seleccione los trabajadores para la encuesta</h3>
                 <div class="table-wrapper-scroll-y my-custom-scrollbar">
 
-                    <table class="table table-bordered table-striped mb-0">
+                    <table class="table table-bordered table-striped mb-0" id="table-asign">
                       <thead>
                         <tr> 
                             <th>           
@@ -144,7 +146,14 @@ display: block;
             <button class="btn btn-sm btn-primary m-t-n-xs float-right" style="margin-right: 30px;margin-top:30px" onclick="clear_date();"><i class="fa fa-check-square"></i> Limpiar</button>
             </div>         
             <script>
-       
+                $(document).ready( function () {
+                    $('#table-asign').DataTable({ 
+                        'language': {url: 'http://cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/Spanish.json'},
+                        'scrollY': 300,
+                        'scroller':true,
+                        'responsive':true,
+                        });
+                } );
                 function clear_date(){
                     $('input[type="checkbox"]').prop('checked', false);
                     document.getElementById('inputdate1').value = null;
@@ -189,7 +198,7 @@ display: block;
                             },   
                         success:  function(response){
                             alert(response);
-                                //window.location.href = '{% url 'dashboard' %}';
+                                //window.location.href = '{% url 'asign' %}';
                             }
                         });
                     }
@@ -233,6 +242,8 @@ display: block;
     <script src="{% static 'js/plugins/toastr/toastr.min.js' %}"></script>
     <!-- Date range picker -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.css">
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.js"></script>
 
     <script>
         function calculateBarWidth(datasetCount){

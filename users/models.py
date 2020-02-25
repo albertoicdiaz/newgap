@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+import datetime
 
 class TipoUsuario(models.Model):
     nombre_tipo = models.CharField(max_length=45)
@@ -14,7 +15,6 @@ class Usuario(models.Model):
     apellido_paterno = models.CharField(max_length=45, null=True, blank=True)
     apellido_materno = models.CharField(max_length=45, null=True, blank=True)
     rut = models.CharField(max_length=20)
-    tipo_usuario = models.ForeignKey(TipoUsuario, on_delete=models.CASCADE)
 
     def __str__(self):
         return str(self.credenciales)
@@ -40,7 +40,7 @@ class Departamento (models.Model):
 
 class Cargo (models.Model):
     nombre_cargo = models.CharField(max_length=45)
-
+    tipo_usuario = models.ForeignKey(TipoUsuario, on_delete=models.CASCADE)
     def __str__(self):
         return self.nombre_cargo
 
@@ -102,6 +102,8 @@ class Respuesta(models.Model):
     usuario = models.ForeignKey(Trabajador, on_delete=models.CASCADE)
     encuesta = models.ForeignKey(Encuesta, on_delete=models.CASCADE)
     valor = models.IntegerField()
+    fecha_respuesta = models.DateField(("Date"), default=datetime.date.today)
+
 
     def __str__(self):
         return "usuario: %s ; pregunta: %s ; valor: %s" % (self.usuario, self.pregunta, self.valor)
@@ -112,3 +114,22 @@ class Realizar_enc(models.Model):
 
     def __str__(self):
         return "empleado: %s ; encuesta %s" % (self.empleado, self.encuesta)
+
+class Recomendacion(models.Model):
+    nombre = models.TextField()
+    objetivo = models.TextField()
+    descripcion = models.TextField()
+    guia_referencia = models.TextField()
+    referencia = models.TextField()
+    dominio = models.ForeignKey(Dominio, on_delete=models.CASCADE)
+    
+    def __str__(self):
+        return self.nombre
+
+class Encargado(models.Model):
+    encargado = models.ForeignKey(Trabajador, on_delete=models.CASCADE)
+    dominio = models.ForeignKey(Dominio, on_delete=models.CASCADE)
+    empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return "encargado: %s ; dominio: %s ; empresa: %s" % (self.encargado, self.dominio, self.empresa)
