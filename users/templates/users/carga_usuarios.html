@@ -20,6 +20,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/json2/20160511/json2.js"></script>
+    <script lang="javascript" src="{% static 'js/sheetjs/dist/xlsx.full.min.js' %}"></script>
+    <script lang="javascript" src="{% static 'js/FileSaver/dist/FileSaver.js' %}"></script>
     <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
 
 </head>
@@ -80,6 +82,7 @@
         </div>
         <button class="btn btn-sm btn-primary m-t-n-xs float-right" style="margin-right: 30px; margin-top:30px" onclick="loadusers();"><i class="fa fa-check-square-o"></i> Enviar</button>
         <button class="btn btn-sm btn-primary m-t-n-xs float-right" style="margin-right: 30px;margin-top:30px" onclick="clear_file();"><i class="fa fa-check-square"></i> Limpiar</button>       
+        <button id="download-plantilla" class="btn btn-sm btn-primary m-t-n-xs float-right" style="margin-right: 30px; margin-top:30px"><i class="fa fa-check-square-o"></i> Descargar plantilla</button>
         <script>
             function loadusers(){
                 var file_data = $("#excel").prop("files")[0];   
@@ -114,8 +117,46 @@
         <div>
             <strong>Copyright</strong>  &copy; 2020
         </div>
+    <div class="row" style="margin-top: 30px;margin-bottom: 30px; display:nones">
+        <div class="col-lg-12">
+            <table class="table table-striped table-bordered" id="plantilla" name="tables">
+                <thead>
+                <tr>
+                    <th scope="col" style="text-align: center;"><h3>Primer Nombre</h3></th>
+                    <th scope="col" style="text-align: center;"><h3>Segundo Nombre</h3></th>
+                    <th scope="col" style="text-align: center;"><h3>Apellido Paterno</h3></th>
+                    <th scope="col" style="text-align: center;"><h3>Apellido Materno</h3></th>
+                    <th scope="col" style="text-align: center;"><h3>Email</h3></th>
+                    <th scope="col" style="text-align: center;"><h3>Rut</h3></th>
+                    <th scope="col" style="text-align: center;"><h3>Cargo</h3></th>
+                    <th scope="col" style="text-align: center;"><h3>Departamento</h3></th>
+                    <th scope="col" style="text-align: center;"><h3>Sucursal</h3></th>
+                    <th scope="col" style="text-align: center;"><h3>Tipo (Directivo, Operativo o Ambos)</h3></th>
+                </tr>
+                </thead>
+                <tbody id="table-append2">
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
+
+<script>
+    var wb = XLSX.utils.book_new();
+    var ws1 = XLSX.utils.table_to_sheet(document.getElementById('plantilla'));
+    XLSX.utils.book_append_sheet(wb, ws1, "Usuarios");
+
+    var wbout = XLSX.write(wb, {bookType:'xlsx', bookSST:true, type: 'binary'});
+    function s2ab(s) {
+        var buf = new ArrayBuffer(s.length);
+        var view = new Uint8Array(buf);
+        for (var i=0; i<s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
+        return buf;
+    }
+    $("#download-plantilla").click(function(){
+        saveAs(new Blob([s2ab(wbout)],{type:"application/octet-stream"}), 'Usuarios.xlsx');
+    });
+</script>
     <!-- Mainly scripts -->
     <script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
     <script src="{% static 'js/popper.min.js' %}"></script>
